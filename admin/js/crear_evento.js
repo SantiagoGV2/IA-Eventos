@@ -1,31 +1,5 @@
 'use strict';
 
-document.addEventListener('DOMContentLoaded', async () => {
-    try {
-        // Obtener las categorias
-        const catResponse = await fetch('http://localhost:8080/project-AI/categoria');
-        const categorias = await catResponse.json();
-        const catSelect = document.getElementById('categoria');
-        categorias.forEach(cate => {
-            const option = document.createElement('option');
-            option.value = cate.catId;
-            option.textContent = `${cate.catId} - ${cate.catNombre}`;
-            catSelect.appendChild(option);
-        });
-
-        // Asignar automáticamente el admId al campo oculto desde localStorage
-        const admId = localStorage.getItem('admId');
-        if (admId) {
-            document.getElementById('admId').value = admId;
-        } else {
-            console.warn('admId no encontrado en localStorage');
-        }
-
-    } catch (error) {
-        console.error('Error al obtener datos:', error);
-    }
-});
-
 // Manejo del formulario
 const formCrearEvento = document.getElementById('formCrearEvento');
 if (formCrearEvento) {
@@ -34,7 +8,6 @@ if (formCrearEvento) {
 
         const formData = new FormData(formCrearEvento);
         const datos = Object.fromEntries(formData.entries());
-        const admId = datos.admId;
 
         // Log para depurar
         console.log('Datos enviados:', {
@@ -45,15 +18,15 @@ if (formCrearEvento) {
             eveComuUbicacion: datos.ubicacion,
             eveComuEnlace: datos.enlace,
             eveComuEstado: datos.estado,
-            catId: datos.categoria,
-            admId: admId
+            eveComuCategoria: datos.categoriaEvento,
         });
 
         try {
-            const response = await fetch(`http://localhost:8080/project-AI/eventoComuAG/${admId}`, {
+            const response = await fetch('http://localhost:8080/project-AI/eventoComuAG', {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json'
+                    'Content-Type': 'application/json',
+                    'Authorization': localStorage.getItem('jwtToken') // 👈 Aquí lo agregamos
                 },
                 body: JSON.stringify({
                     eveComuTitulo: datos.tituloEvento,
@@ -63,10 +36,10 @@ if (formCrearEvento) {
                     eveComuUbicacion: datos.ubicacion,
                     eveComuEnlace: datos.enlace,
                     eveComuEstado: datos.estado,
-                    categoria: { catId: datos.categoria }
+                    eveComuCategoria: datos.categoriaEvento
                 })
             });
-
+            
             if (response.ok) {
                 alert('Registro exitoso');
                 formCrearEvento.reset();

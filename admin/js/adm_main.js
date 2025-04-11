@@ -36,8 +36,6 @@ async function obtenerUsuario() {
 
     usuarioGlobal = await response.json();
     console.log("Usuario autenticado:", usuarioGlobal);
-    // Guardar admId en localStorage
-    localStorage.setItem("admId", usuarioGlobal.admId); // <<--- AGREGAR ESTO
     document.getElementById("usuario-info").textContent = `Bienvenido, ${usuarioGlobal.admNombre}`;
     const iniciales = obtenerIniciales(usuarioGlobal.admNombre);
     document.getElementById("user-avatar").textContent = iniciales;

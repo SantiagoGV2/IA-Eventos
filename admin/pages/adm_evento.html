@@ -521,8 +521,7 @@
           <h5 class="text-white">Panel Admin Premium</h5>
           <a href="#"  class="active" class="admin-sidebar-btn"><i class="bi bi-person-gear"></i> Administrador</a>
           <a href="/admin/pages/administrar_evento.html"><i class="bi bi-calendar-event"></i> Gestionar Eventos</a>
-          <a href="/admin/pages/administrar_categoria.html"><i class="bi bi-tags"></i> Gestionar Categorías</a>
-          <a href="/admin/index.html"><i class="bi bi-search"></i> Buscador IA</a>
+          <a href="/index.html"><i class="bi bi-search"></i> Buscador IA</a>
           <div class="mt-auto"></div>
           <a href="#" id="btnLogout" class="text-danger">
             <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
@@ -564,19 +563,6 @@
                       </div>
                   </div>
                   
-                  <!-- Card Crear Categoría -->
-                  <div class="col-md-4">
-                      <div class="system-card">
-                          <div class="system-icon">
-                              <i class="bi bi-tags-fill"></i>
-                          </div>
-                          <h4 class="fw-bold mb-3">Crear Categoría</h4>
-                          <p class="text-muted mb-4">Organiza los eventos por categorías con nuestro sistema avanzado.</p>
-                          <button class="btn btn-system w-100" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
-                              <i class="bi bi-plus-circle-fill me-2"></i>Nueva Categoría
-                          </button>
-                      </div>
-                  </div>
                   
                   <!-- Card Actualizar Evento -->
                   <div class="col-md-4">
@@ -591,20 +577,6 @@
                           </a>
                       </div>
                   </div>
-
-                  <div class="col-md-4">
-                    <div class="system-card">
-                        <div class="system-icon">
-                            <i class="bi bi-tags"></i>
-                        </div>
-                        <h4 class="fw-bold mb-3">Actualizar Categoría</h4>
-                        <p class="text-muted mb-4">Modifica y gestiona todas las categorías existentes.</p>
-                        <a href="/admin/pages/administrar_categoria.html" class="btn btn-system w-100">
-                            <i class="bi bi-arrow-clockwise me-2"></i>Actualizar
-                        </a>
-                    </div>
-                </div>
-
               </div>
           </div>
       </div>
@@ -635,31 +607,31 @@
                               <div class="form-group premium-input">
                                   <label for="tituloEvento" class="form-label">Título del Evento</label>
                                   <div class="input-wrapper">
-                                      <input type="text" class="form-control" id="tituloEvento" placeholder="Ej: Conferencia Internacional" required>
+                                      <input type="text" class="form-control" id="tituloEvento" name="tituloEvento" placeholder="Ej: Conferencia Internacional" required>
                                       <i class="bi bi-card-heading input-icon"></i>
                                   </div>
                               </div>
                           </div>
                           <div class="col-md-6">
-                              <div class="form-group premium-input">
-                                  <label for="categoria" class="form-label">Categoría</label>
-                                  <div class="input-wrapper">
-                                      <select class="form-select" id="categoria" required>
-                                          <option value="">Seleccione categoría</option>
-                                          <option value="conferencia">Conferencia</option>
-                                          <option value="taller">Taller</option>
-                                          <option value="seminario">Seminario</option>
-                                      </select>
-                                      <i class="bi bi-tag-fill input-icon"></i>
-                                  </div>
-                              </div>
-                          </div>
+                            <div class="form-group premium-input">
+                                <label for="categoriaEvento" class="form-label">Categoria del evento</label>
+                                <div class="input-wrapper">
+                                    <select class="form-control" id="categoriaEvento" name="categoriaEvento" required>
+                                        <option value="">Selecciona una categoría</option>
+                                        <option value="Conferencia">Conferencia</option>
+                                        <option value="Taller">Taller</option>
+                                        <option value="Webinar">Webinar</option>
+                                        <option value="Cultural">Cultural</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
                       </div>
                       
                       <div class="form-group premium-input mt-4">
                           <label for="descripcion" class="form-label">Descripción</label>
                           <div class="input-wrapper">
-                              <textarea class="form-control" id="descripcion" rows="4" placeholder="Describa el evento en detalle..." required></textarea>
+                              <textarea class="form-control" id="descripcion" rows="4" name="descripcion" placeholder="Describa el evento en detalle..." required></textarea>
                               <i class="bi bi-text-paragraph input-icon"></i>
                           </div>
                       </div>
@@ -674,7 +646,7 @@
                               <div class="form-group premium-input">
                                   <label for="fechaInicio" class="form-label">Fecha Inicio</label>
                                   <div class="input-wrapper">
-                                      <input type="datetime-local" class="form-control" id="fechaInicio" required>
+                                      <input type="datetime-local" class="form-control" id="fechaInicio" name="fechaInicio" required>
                                       <i class="bi bi-calendar-event input-icon"></i>
                                   </div>
                               </div>
@@ -683,7 +655,7 @@
                               <div class="form-group premium-input">
                                   <label for="fechaFin" class="form-label">Fecha Fin</label>
                                   <div class="input-wrapper">
-                                      <input type="datetime-local" class="form-control" id="fechaFin" required>
+                                      <input type="datetime-local" class="form-control" id="fechaFin" name="fechaFin" required>
                                       <i class="bi bi-calendar-event input-icon"></i>
                                   </div>
                               </div>
@@ -700,7 +672,7 @@
                               <div class="form-group premium-input">
                                   <label for="ubicacion" class="form-label">Lugar</label>
                                   <div class="input-wrapper">
-                                      <input type="text" class="form-control" id="ubicacion" placeholder="Ej: Centro de Convenciones" required>
+                                      <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Ej: Centro de Convenciones" required>
                                       <i class="bi bi-geo-alt-fill input-icon"></i>
                                   </div>
                               </div>
@@ -709,7 +681,7 @@
                               <div class="form-group premium-input">
                                   <label for="enlace" class="form-label">Enlace</label>
                                   <div class="input-wrapper">
-                                      <input type="url" class="form-control" id="enlace" placeholder="https://">
+                                      <input type="url" class="form-control" id="enlace" name="enlace" placeholder="https://">
                                       <i class="bi bi-link-45deg input-icon"></i>
                                   </div>
                               </div>
@@ -719,7 +691,7 @@
                       <div class="form-group premium-input mt-4">
                           <label for="estado" class="form-label">Estado</label>
                           <div class="input-wrapper">
-                              <select class="form-select" id="estado" required>
+                              <select class="form-select" id="estado" name="estado" required>
                                   <option value="activo">Activo</option>
                                   <option value="inactivo">Inactivo</option>
                                   <option value="cancelado">Cancelado</option>
@@ -741,58 +713,10 @@
       </div>
   </div>
 
-  <!-- Modal Crear Categoría (Estilo Premium Mejorado) -->
-  <div class="modal fade system-modal" id="modalCrearCategoria" tabindex="-1" aria-labelledby="modalCrearCategoriaLabel" aria-hidden="true">
-      <div class="modal-dialog modal-dialog-centered">
-          <div class="modal-content border-0">
-              <div class="modal-header bg-gradient-primary text-white">
-                  <div class="d-flex align-items-center">
-                      <div class="icon-wrapper bg-white me-3">
-                          <i class="bi bi-tags-fill text-primary"></i>
-                      </div>
-                      <h5 class="modal-title mb-0">Nueva Categoría</h5>
-                  </div>
-                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-              </div>
-              <div class="modal-body p-4 p-md-5">
-                  <form class="system-form premium-form" id="formCrearCategoria">
-                      <div class="form-group premium-input">
-                          <label for="nombreCategoria" class="form-label">Nombre de la categoría</label>
-                          <div class="input-wrapper">
-                              <input type="text" class="form-control" id="nombreCategoria" required>
-                              <i class="bi bi-tag-fill input-icon"></i>
-                          </div>
-                      </div>
-                      <div class="form-group premium-input mt-4">
-                          <label for="descripcionCategoria" class="form-label">Descripción</label>
-                          <div class="input-wrapper">
-                              <textarea class="form-control" id="descripcionCategoria" rows="4" required></textarea>
-                              <i class="bi bi-text-paragraph input-icon"></i>
-                          </div>
-                      </div>
-                      <div class="form-group premium-input mt-4">
-                        <label for="fechaCreacionInput" class="form-label">Fecha de Creación</label>
-                        <div class="input-wrapper">
-                            <input type="datetime-local" class="form-control" id="fechaCreacionInput" required>
-                            <i class="bi bi-calendar-date input-icon"></i>
-                        </div>
-                    </div>
-                  </form>
-              </div>
-              <div class="modal-footer border-top-0 bg-light d-flex justify-content-between">
-                  <button type="button" class="btn btn-outline-system" data-bs-dismiss="modal">
-                      <i class="bi bi-x-circle me-2"></i>Cancelar
-                  </button>
-                  <button type="submit" form="formCrearCategoria" class="btn btn-system">
-                      <i class="bi bi-check-circle-fill me-2"></i>Guardar Categoría
-                  </button>
-              </div>
-          </div>
-      </div>
-  </div>
-
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="/admin/js/adm_main.js"></script>
+  <script src="/admin/js/crear_evento.js"></script>
   <script>
       // Toggle sidebar on mobile
       document.getElementById('mobileMenuBtn').addEventListener('click', function() {

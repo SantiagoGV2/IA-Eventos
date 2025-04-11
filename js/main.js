@@ -50,13 +50,13 @@ async function obtenerUsuario() {
         console.error("Error al obtener usuario:", error);
         alert(error.message);
         localStorage.removeItem("jwtToken");
-        window.location.href = "/pages/sesion.html";
+        window.location.href = "/index.html.html";
     }
 }
 
 function cerrarSesion() {
     localStorage.removeItem('jwtToken');
-    window.location.href = '/pages/inicio.html';
+    window.location.href = '/index.html';
 }
 
 async function buscarEventos() {

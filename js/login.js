@@ -32,7 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
                 if (data.token) {
                     localStorage.setItem("jwtToken", `Bearer ${data.token}`); // Almacenar token con formato correcto
-                    window.location.href = "/index.html";
+                    window.location.href = "/pages/inicio.html";
                 } else {
                     alert("Error: No se recibió el token de autenticación.");
                 }
