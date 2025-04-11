@@ -1,0 +1,1010 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel de Administración Premium - Categorías</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <style>
+        :root {
+            --primary-color: #e4022c;
+            --secondary-color: #273474;
+            --complementary-color: #394a9e;
+            --light-color: #f8f9fa;
+            --dark-color: #212529;
+            --soft-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            --card-radius: 12px;
+            --input-radius: 8px;
+            --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            overflow-x: hidden;
+        }
+        
+        /* Sidebar Premium */
+        .sidebar {
+            background: linear-gradient(180deg, var(--secondary-color), #1a2448);
+            color: white;
+            width: 280px;
+            min-height: 100vh;
+            padding: 25px;
+            transition: var(--transition);
+            position: fixed;
+            z-index: 1000;
+            box-shadow: 4px 0 15px rgba(0,0,0,0.1);
+        }
+        
+        .sidebar h5 {
+            padding: 15px 0;
+            margin-bottom: 25px;
+            border-bottom: 1px solid rgba(255,255,255,0.15);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .sidebar h5::before {
+            content: '';
+            display: inline-block;
+            width: 8px;
+            height: 8px;
+            background-color: var(--primary-color);
+            border-radius: 50%;
+            margin-right: 12px;
+        }
+        
+        .sidebar a {
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            padding: 12px 18px;
+            margin: 6px 0;
+            border-radius: var(--input-radius);
+            display: flex;
+            align-items: center;
+            transition: var(--transition);
+            font-size: 0.95rem;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .sidebar a::before {
+            content: '';
+            position: absolute;
+            left: -100%;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(228,2,44,0.15), transparent);
+            transition: var(--transition);
+        }
+        
+        .sidebar a:hover::before {
+            left: 100%;
+        }
+        
+        .sidebar a i {
+            margin-right: 12px;
+            font-size: 1.1rem;
+            color: rgba(255,255,255,0.7);
+            transition: var(--transition);
+        }
+        
+        .sidebar a:hover {
+            background-color: rgba(255,255,255,0.08);
+            transform: translateX(5px);
+            color: white;
+        }
+        
+        .sidebar a:hover i {
+            color: var(--primary-color);
+        }
+        
+        .sidebar a.active {
+            background-color: rgba(228,2,44,0.2);
+            color: white;
+            font-weight: 500;
+            border-left: 3px solid var(--primary-color);
+        }
+        
+        .sidebar a.active i {
+            color: var(--primary-color);
+        }
+        
+        /* Main Content Premium */
+        .main-content {
+            margin-left: 280px;
+            transition: var(--transition);
+            min-height: 100vh;
+            background-color: #f5f7fa;
+        }
+        
+        /* Navbar Premium */
+        .navbar {
+            background-color: white;
+            box-shadow: 0 2px 15px rgba(0,0,0,0.08);
+            padding: 15px 30px;
+            position: relative;
+            z-index: 900;
+        }
+        
+        .navbar::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary-color), var(--complementary-color));
+        }
+        
+        .brand-logo {
+            height: 42px;
+            margin-right: 15px;
+            transition: var(--transition);
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+        
+        .brand-logo:hover {
+            transform: translateY(-2px);
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.15));
+        }
+        
+        .user-avatar {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--complementary-color));
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: bold;
+            border: 2px solid white;
+            box-shadow: 0 3px 10px rgba(0,0,0,0.15);
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.1) rotate(5deg);
+            box-shadow: 0 5px 15px rgba(228,2,44,0.3);
+        }
+        
+        /* System Card Premium */
+        .system-card {
+            background-color: white;
+            border-radius: var(--card-radius);
+            padding: 30px;
+            box-shadow: 0 5px 25px rgba(0,0,0,0.05);
+            transition: var(--transition);
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .system-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--complementary-color));
+        }
+        
+        .system-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(228,2,44,0.1);
+        }
+        
+        .system-icon {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, rgba(228,2,44,0.1), rgba(57,74,158,0.1));
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 25px;
+            transition: var(--transition);
+            box-shadow: inset 0 0 0 1px rgba(228,2,44,0.2);
+        }
+        
+        .system-card:hover .system-icon {
+            background: linear-gradient(135deg, var(--primary-color), var(--complementary-color));
+            transform: rotate(5deg) scale(1.05);
+            box-shadow: 0 5px 15px rgba(228,2,44,0.3);
+        }
+        
+        .system-icon i {
+            font-size: 2rem;
+            color: var(--primary-color);
+            transition: var(--transition);
+        }
+        
+        .system-card:hover .system-icon i {
+            color: white;
+            transform: scale(1.1);
+        }
+        
+        .system-card h4 {
+            font-weight: 600;
+            color: var(--secondary-color);
+            margin-bottom: 15px;
+            transition: var(--transition);
+        }
+        
+        .system-card:hover h4 {
+            color: var(--primary-color);
+        }
+        
+        .system-card p {
+            color: #6c757d;
+            margin-bottom: 25px;
+            font-size: 0.95rem;
+            line-height: 1.6;
+        }
+        
+        /* Botones Premium */
+        .btn-system {
+            background: linear-gradient(135deg, var(--primary-color), #c40226);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: var(--input-radius);
+            font-weight: 500;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(228,2,44,0.3);
+            position: relative;
+            overflow: hidden;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .btn-system::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: var(--transition);
+        }
+        
+        .btn-system:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(228,2,44,0.4);
+        }
+        
+        .btn-system:hover::before {
+            left: 100%;
+        }
+        
+        .btn-outline-system {
+            border: 2px solid var(--primary-color);
+            color: var(--primary-color);
+            background-color: transparent;
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .btn-outline-system:hover {
+            background-color: var(--primary-color);
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(228,2,44,0.2);
+        }
+        
+        /* Mobile Menu Button Premium */
+        .mobile-menu-btn {
+            display: none;
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1100;
+            background: linear-gradient(135deg, var(--primary-color), var(--complementary-color));
+            color: white;
+            border: none;
+            width: 46px;
+            height: 46px;
+            border-radius: 12px;
+            font-size: 1.3rem;
+            cursor: pointer;
+            transition: var(--transition);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+        
+        .mobile-menu-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            box-shadow: 0 8px 25px rgba(228,2,44,0.4);
+        }
+        
+        /* Responsive Styles */
+        @media (max-width: 992px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.show {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        
+        /* Contenedor principal */
+        .container.py-4 {
+            padding-top: 40px !important;
+            padding-bottom: 40px !important;
+        }
+        
+        /* Título principal */
+        h3.mb-4 {
+            color: var(--secondary-color);
+            font-weight: 600;
+            position: relative;
+            padding-bottom: 15px;
+            margin-bottom: 30px !important;
+        }
+        
+        h3.mb-4::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--complementary-color));
+            border-radius: 3px;
+        }
+        
+        /* Botón de logout */
+        #btnLogout {
+            transition: var(--transition);
+            background-color: rgba(228,2,44,0.1);
+            font-weight: 500;
+            margin-top: 20px;
+            border-radius: 8px;
+        }
+        
+        #btnLogout:hover {
+            background-color: rgba(228,2,44,0.3);
+            transform: translateX(5px);
+        }
+        
+        #btnLogout i {
+            transition: var(--transition);
+        }
+        
+        #btnLogout:hover i {
+            transform: translateX(3px);
+        }
+        
+        /* Estilos para los modales premium */
+        .bg-gradient-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--complementary-color));
+        }
+        
+        .modal-header {
+            border-bottom: none;
+            padding: 1.5rem;
+            border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+        }
+        
+        .modal-content {
+            border-radius: var(--card-radius) !important;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+            border: none;
+        }
+        
+        .modal-body {
+            padding: 2rem;
+        }
+        
+        .icon-wrapper {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
+        
+        .section-header {
+            display: flex;
+            align-items: center;
+            padding-bottom: 10px;
+            border-bottom: 2px solid rgba(228,2,44,0.1);
+            color: var(--secondary-color);
+        }
+        
+        .section-header i {
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        .section-title {
+            font-weight: 600;
+            color: var(--secondary-color);
+        }
+        
+        .premium-form .form-label {
+            font-weight: 500;
+            color: var(--secondary-color);
+            margin-bottom: 0.5rem;
+        }
+        
+        .premium-input .input-wrapper {
+            position: relative;
+        }
+        
+        .premium-input .input-icon {
+            position: absolute;
+            right: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--primary-color);
+            font-size: 1.1rem;
+        }
+        
+        .premium-input .form-control,
+        .premium-input .form-select {
+            padding-right: 45px;
+            border-radius: var(--input-radius);
+            border: 1px solid rgba(0,0,0,0.1);
+            transition: var(--transition);
+        }
+        
+        .premium-input .form-control:focus,
+        .premium-input .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.25rem rgba(228,2,44,0.15);
+        }
+        
+        .premium-input textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+        
+        .modal-footer {
+            padding: 1.5rem;
+        }
+        
+        /* Efecto hover para los inputs */
+        .premium-input .form-control:hover,
+        .premium-input .form-select:hover {
+            border-color: var(--primary-color);
+        }
+        
+        /* Estilo para el campo de fecha de creación */
+        .creation-date {
+            font-size: 0.85rem;
+            color: #6c757d;
+            margin-top: 0.5rem;
+            font-style: italic;
+        }
+        
+        .creation-date strong {
+            color: var(--secondary-color);
+        }
+        
+        /* Estilos específicos para la gestión de categorías */
+        .category-card {
+            background-color: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: var(--transition);
+            border: none;
+        }
+        
+        .category-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(228,2,44,0.1);
+        }
+        
+        .category-header {
+            background: linear-gradient(135deg, var(--secondary-color), var(--complementary-color));
+            color: white;
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .category-body {
+            padding: 25px;
+        }
+        
+        .category-footer {
+            padding: 15px 25px;
+            background-color: #f8f9fa;
+            display: flex;
+            justify-content: space-between;
+            border-top: 1px solid rgba(0,0,0,0.05);
+        }
+        
+        .category-status {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: bold;
+            background-color: rgba(255,255,255,0.2);
+        }
+        
+        .status-active {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #27ae60;
+        }
+        
+        .status-inactive {
+            background-color: rgba(149, 165, 166, 0.2);
+            color: #7f8c8d;
+        }
+        
+        .search-container {
+            background-color: white;
+            padding: 25px;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-bottom: 30px;
+        }
+        
+        .btn-action {
+            padding: 8px 15px;
+            font-size: 0.9rem;
+            border-radius: var(--input-radius);
+            margin-left: 10px;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+        }
+        
+        .btn-edit {
+            background-color: rgba(57, 74, 158, 0.1);
+            color: var(--complementary-color);
+            border: 1px solid rgba(57, 74, 158, 0.3);
+        }
+        
+        .btn-edit:hover {
+            background-color: rgba(57, 74, 158, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .btn-delete {
+            background-color: rgba(228, 2, 44, 0.1);
+            color: var(--primary-color);
+            border: 1px solid rgba(228, 2, 44, 0.3);
+        }
+        
+        .btn-delete:hover {
+            background-color: rgba(228, 2, 44, 0.2);
+            transform: translateY(-2px);
+        }
+        
+        .empty-state {
+            text-align: center;
+            padding: 50px 20px;
+            background-color: white;
+            border-radius: var(--card-radius);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+        
+        .empty-state i {
+            font-size: 3rem;
+            color: #bdc3c7;
+            margin-bottom: 20px;
+        }
+        
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .category-color {
+            width: 25px;
+            height: 25px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-right: 10px;
+            border: 2px solid rgba(255,255,255,0.8);
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        /* Badges personalizados */
+        .badge-custom {
+            background-color: rgba(39, 52, 116, 0.1);
+            color: var(--secondary-color);
+            padding: 8px 12px;
+            border-radius: var(--input-radius);
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .badge-custom i {
+            margin-right: 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+
+<body>
+  <!-- Mobile Menu Button -->
+  <button class="mobile-menu-btn" id="mobileMenuBtn">
+      <i class="bi bi-list"></i>
+  </button>
+
+  <div class="d-flex">
+      <!-- Sidebar Completo -->
+      <div class="sidebar d-flex flex-column">
+        <h5 class="text-white">Panel Admin Premium</h5>
+        <a href="/admin/pages/adm_evento.html" class="admin-sidebar-btn"><i class="bi bi-person-gear"></i> Administrador</a>
+        <a href="/admin/pages/administrar_evento.html"><i class="bi bi-calendar-event"></i>Gestionar Eventos</a>
+        <a href="/admin/pages/administrar_categoria.html" class="active"><i class="bi bi-tags"></i>Gestionar Categorías</a>
+        <a href="#"><i class="bi bi-search"></i> Buscador IA</a>
+
+        
+        <div class="mt-auto"></div>
+        <a href="#" id="btnLogout" class="text-danger">
+            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </a>          
+    </div>
+
+      <!-- Main Content -->
+      <div class="main-content w-100">
+          <!-- Navbar Original -->
+          <nav class="navbar navbar-expand-lg">
+              <div class="container-fluid">
+                  <div class="d-flex align-items-center">
+                      <img src="/admin/asset/img/Nuevos logos/Fusoft complete.png" alt="Logo Fusoft" class="brand-logo" />
+                      <img src="/admin/asset/img/Official Uniempresarial bussines material/Logo uniempresarial rectangular CCB_Logo Completo Uniempresarial a color.png" alt="Logo Uniempresarial" class="brand-logo d-none d-md-block" />
+                  </div>
+                  <div class="d-flex align-items-center">
+                    <div class="user-avatar" id="user-avatar">JP</div>
+                    <span id="usuario-info" class="d-none d-lg-inline ms-2">Administrador</span>
+                  </div>
+              </div>
+          </nav>
+
+          <!-- Contenido de Gestión de Categorías -->
+          <div class="container py-4">
+              <div class="d-flex justify-content-between align-items-center mb-4">
+                  <h3>Gestionar Categorías</h3>
+                  <button class="btn btn-system" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
+                      <i class="bi bi-plus-circle-fill me-2"></i>Nueva Categoría
+                  </button>
+              </div>
+              
+              <!-- Barra de Búsqueda -->
+              <div class="search-container">
+                  <div class="row">
+                      <div class="col-md-12">
+                          <div class="form-group premium-input">
+                              <label for="buscarCategoria" class="form-label">Buscar Categorías</label>
+                              <div class="input-group">
+                                  <input type="text" class="form-control" id="buscarCategoria" placeholder="Buscar por nombre, descripción...">
+                                  <button class="btn btn-system" type="button" id="btnBuscar">
+                                      <i class="bi bi-search me-2"></i>Buscar
+                                  </button>
+                              </div>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              
+              <!-- Listado de Categorías -->
+              <div id="listaCategorias">
+                  <!-- Ejemplo de categoría 1 -->
+                  <div class="category-card">
+                      <div class="category-header">
+                          <h5 class="mb-0 text-white">
+                              Conferencias
+                          </h5>
+                          <span class="category-status status-active">Activa</span>
+                      </div>
+                      <div class="category-body">
+                          <p class="text-muted">Eventos de tipo conferencia con ponentes expertos en diferentes áreas del conocimiento.</p>
+                          <div class="d-flex flex-wrap">
+                              <span class="badge-custom"><i class="bi bi-calendar-event"></i>15 eventos</span>
+                              <span class="badge-custom"><i class="bi bi-clock"></i>Creada: 12/08/2023</span>
+                          </div>
+                      </div>
+                      <div class="category-footer">
+                          <small class="text-muted">Última actualización: 05/10/2023</small>
+                          <div>
+                              <button class="btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#modalEditarCategoria">
+                                  <i class="bi bi-pencil-fill me-1"></i> Editar
+                              </button>
+                              <button class="btn-action btn-delete" data-bs-toggle="modal" data-bs-target="#modalConfirmarEliminar">
+                                  <i class="bi bi-trash-fill me-1"></i> Eliminar
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <!-- Ejemplo de categoría 2 -->
+                  <div class="category-card">
+                      <div class="category-header">
+                          <h5 class="mb-0 text-white">
+                              Talleres
+                          </h5>
+                          <span class="category-status status-active">Activa</span>
+                      </div>
+                      <div class="category-body">
+                          <p class="text-muted">Sesiones prácticas para desarrollar habilidades específicas con expertos en el área.</p>
+                          <div class="d-flex flex-wrap">
+                              <span class="badge-custom"><i class="bi bi-calendar-event"></i>8 eventos</span>
+                              <span class="badge-custom"><i class="bi bi-clock"></i>Creada: 05/09/2023</span>
+                          </div>
+                      </div>
+                      <div class="category-footer">
+                          <small class="text-muted">Última actualización: 15/10/2023</small>
+                          <div>
+                              <button class="btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#modalEditarCategoria">
+                                  <i class="bi bi-pencil-fill me-1"></i> Editar
+                              </button>
+                              <button class="btn-action btn-delete" data-bs-toggle="modal" data-bs-target="#modalConfirmarEliminar">
+                                  <i class="bi bi-trash-fill me-1"></i> Eliminar
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+                  
+                  <!-- Ejemplo de categoría 3 -->
+                  <div class="category-card">
+                      <div class="category-header">
+                          <h5 class="mb-0 text-white">
+                              Seminarios
+                          </h5>
+                          <span class="category-status status-inactive">Inactiva</span>
+                      </div>
+                      <div class="category-body">
+                          <p class="text-muted">Eventos académicos intensivos sobre temas específicos con varios ponentes.</p>
+                          <div class="d-flex flex-wrap">
+                              <span class="badge-custom"><i class="bi bi-calendar-event"></i>3 eventos</span>
+                              <span class="badge-custom"><i class="bi bi-clock"></i>Creada: 20/07/2023</span>
+                          </div>
+                      </div>
+                      <div class="category-footer">
+                          <small class="text-muted">Última actualización: 01/09/2023</small>
+                          <div>
+                              <button class="btn-action btn-edit" data-bs-toggle="modal" data-bs-target="#modalEditarCategoria">
+                                  <i class="bi bi-pencil-fill me-1"></i> Editar
+                              </button>
+                              <button class="btn-action btn-delete" data-bs-toggle="modal" data-bs-target="#modalConfirmarEliminar">
+                                  <i class="bi bi-trash-fill me-1"></i> Eliminar
+                              </button>
+                          </div>
+                      </div>
+                  </div>
+              </div>
+              
+              
+              <!-- Estado vacío (opcional) -->
+              <div class="empty-state d-none">
+                  <i class="bi bi-tags"></i>
+                  <h4>No hay categorías creadas</h4>
+                  <p class="text-muted">Comienza creando tu primera categoría para organizar tus eventos</p>
+                  <button class="btn btn-system mt-3" data-bs-toggle="modal" data-bs-target="#modalCrearCategoria">
+                      <i class="bi bi-plus-circle-fill me-2"></i>Crear Categoría
+                  </button>
+              </div>
+              
+          </div>
+      </div>
+  </div>
+
+  <!-- Modal Crear Categoría (Estilo Premium Mejorado) -->
+  <div class="modal fade system-modal" id="modalCrearCategoria" tabindex="-1" aria-labelledby="modalCrearCategoriaLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0">
+              <div class="modal-header bg-gradient-primary text-white">
+                  <div class="d-flex align-items-center">
+                      <div class="icon-wrapper bg-white me-3">
+                          <i class="bi bi-tags-fill text-primary"></i>
+                      </div>
+                      <h5 class="modal-title mb-0">Nueva Categoría</h5>
+                  </div>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body p-4 p-md-5">
+                  <form class="system-form premium-form" id="formCrearCategoria">
+                      <div class="form-group premium-input">
+                          <label for="nombreCategoria" class="form-label">Nombre de la categoría</label>
+                          <div class="input-wrapper">
+                              <input type="text" class="form-control" id="nombreCategoria" placeholder="Ej: Talleres Prácticos" required>
+                              <i class="bi bi-tag-fill input-icon"></i>
+                          </div>
+                      </div>
+
+                      <div class="form-group premium-input mt-4">
+                          <label for="descripcionCategoria" class="form-label">Descripción</label>
+                          <div class="input-wrapper">
+                              <textarea class="form-control" id="descripcionCategoria" rows="4" placeholder="Describa el propósito de esta categoría..." required></textarea>
+                              <i class="bi bi-text-paragraph input-icon"></i>
+                          </div>
+                      </div>
+                      <div class="form-group premium-input mt-4">
+                          <label for="fechaCreacionInput" class="form-label">Fecha de Creación</label>
+                          <div class="input-wrapper">
+                              <input type="datetime-local" class="form-control" id="fechaCreacionInput" required>
+                              <i class="bi bi-calendar-date input-icon"></i>
+                          </div>
+                      </div>
+                  </form>
+              </div>
+              <div class="modal-footer border-top-0 bg-light d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-system" data-bs-dismiss="modal">
+                      <i class="bi bi-x-circle me-2"></i>Cancelar
+                  </button>
+                  <button type="submit" form="formCrearCategoria" class="btn btn-system">
+                      <i class="bi bi-check-circle-fill me-2"></i>Crear Categoría
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Modal Editar Categoría -->
+  <div class="modal fade system-modal" id="modalEditarCategoria" tabindex="-1" aria-labelledby="modalEditarCategoriaLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0">
+              <div class="modal-header bg-gradient-primary text-white">
+                  <div class="d-flex align-items-center">
+                      <div class="icon-wrapper bg-white me-3">
+                          <i class="bi bi-pencil-fill text-primary"></i>
+                      </div>
+                      <h5 class="modal-title mb-0">Editar Categoría</h5>
+                  </div>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body p-4 p-md-5">
+                  <form class="system-form premium-form" id="formEditarCategoria">
+                      <div class="form-group premium-input">
+                          <label for="editarNombreCategoria" class="form-label">Nombre de la categoría</label>
+                          <div class="input-wrapper">
+                              <input type="text" class="form-control" id="editarNombreCategoria" value="Conferencias" required>
+                              <i class="bi bi-tag-fill input-icon"></i>
+                          </div>
+                      </div>
+
+                      <div class="form-group premium-input mt-4">
+                          <label for="editarDescripcionCategoria" class="form-label">Descripción</label>
+                          <div class="input-wrapper">
+                              <textarea class="form-control" id="editarDescripcionCategoria" rows="4" required>Eventos de tipo conferencia con ponentes expertos en diferentes áreas del conocimiento.</textarea>
+                              <i class="bi bi-text-paragraph input-icon"></i>
+                          </div>
+                      </div>
+                      <div class="form-group premium-input mt-4">
+                          <label for="editarFechaCreacion" class="form-label">Fecha de Creación</label>
+                          <div class="input-wrapper">
+                              <input type="datetime-local" class="form-control" id="editarFechaCreacion" required>
+                              <i class="bi bi-calendar-date input-icon"></i>
+                          </div>
+                      </div>
+                  </form>
+              </div>
+              <div class="modal-footer border-top-0 bg-light d-flex justify-content-between">
+                  <button type="button" class="btn btn-outline-system" data-bs-dismiss="modal">
+                      <i class="bi bi-x-circle me-2"></i>Cancelar
+                  </button>
+                  <button type="submit" form="formEditarCategoria" class="btn btn-system">
+                      <i class="bi bi-check-circle-fill me-2"></i>Guardar Cambios
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+  
+  <!-- Modal Confirmar Eliminación -->
+  <div class="modal fade system-modal" id="modalConfirmarEliminar" tabindex="-1" aria-labelledby="modalConfirmarEliminarLabel" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content border-0">
+              <div class="modal-header bg-danger text-white">
+                  <div class="d-flex align-items-center">
+                      <div class="icon-wrapper bg-white me-3">
+                          <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                      </div>
+                      <h5 class="modal-title mb-0">Confirmar Eliminación</h5>
+                  </div>
+                  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+              </div>
+              <div class="modal-body p-4 p-md-5 text-center">
+                  <i class="bi bi-trash-fill text-danger" style="font-size: 3rem; margin-bottom: 20px;"></i>
+                  <h5>¿Estás seguro de eliminar esta categoría?</h5>
+                  <p class="text-muted">"Conferencias" será eliminada permanentemente. Los eventos asociados no se eliminarán pero quedarán sin categoría.</p>
+              </div>
+              <div class="modal-footer border-top-0 bg-light d-flex justify-content-center">
+                  <button type="button" class="btn btn-outline-system me-3" data-bs-dismiss="modal">
+                      <i class="bi bi-x-circle me-2"></i>Cancelar
+                  </button>
+                  <button type="button" class="btn btn-danger">
+                      <i class="bi bi-trash-fill me-2"></i>Sí, Eliminar
+                  </button>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+      // Toggle sidebar on mobile
+      document.getElementById('mobileMenuBtn').addEventListener('click', function() {
+          document.querySelector('.sidebar').classList.toggle('show');
+      });
+      
+      // Search functionality
+      document.getElementById('btnBuscar').addEventListener('click', function() {
+          const searchTerm = document.getElementById('buscarCategoria').value.toLowerCase();
+          const categoryCards = document.querySelectorAll('.category-card');
+          
+          categoryCards.forEach(card => {
+              const title = card.querySelector('.category-header h5').textContent.toLowerCase();
+              const description = card.querySelector('.category-body p').textContent.toLowerCase();
+              
+              if (title.includes(searchTerm) || description.includes(searchTerm)) {
+                  card.style.display = 'block';
+              } else {
+                  card.style.display = 'none';
+              }
+          });
+      });
+      
+      // Form submission handlers (placeholder)
+      document.getElementById('formCrearCategoria').addEventListener('submit', function(e) {
+          e.preventDefault();
+          alert('Categoría creada exitosamente');
+          const modal = bootstrap.Modal.getInstance(document.getElementById('modalCrearCategoria'));
+          modal.hide();
+          // Aquí iría la lógica para agregar la nueva categoría a la lista
+      });
+      
+      document.getElementById('formEditarCategoria').addEventListener('submit', function(e) {
+          e.preventDefault();
+          alert('Categoría actualizada exitosamente');
+          const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarCategoria'));
+          modal.hide();
+          // Aquí iría la lógica para actualizar la categoría en la lista
+      });
+      
+      // Delete confirmation handler
+      document.querySelector('#modalConfirmarEliminar .btn-danger').addEventListener('click', function() {
+          alert('Categoría eliminada exitosamente');
+          const modal = bootstrap.Modal.getInstance(document.getElementById('modalConfirmarEliminar'));
+          modal.hide();
+          // Aquí iría la lógica para eliminar la categoría de la lista
+      });
+      
+      // Set current date/time in creation field when modal opens
+      document.getElementById('modalCrearCategoria').addEventListener('show.bs.modal', function() {
+          const now = new Date();
+          const formattedDate = now.toISOString().slice(0, 16);
+          document.getElementById('fechaCreacionInput').value = formattedDate;
+      });
+  </script>
+</body>
+</html>

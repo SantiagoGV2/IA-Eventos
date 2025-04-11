@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro - Plataforma Profesional</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../css/registro.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="row g-0">
+                <!-- Columna de ilustración -->
+                <div class="col-lg-6 d-none d-lg-block auth-illustration">
+                    <div class="illustration-content">
+                        <i class="bi bi-shield-lock" style="font-size: 3rem; margin-bottom: 1.5rem; color: rgba(255,255,255,0.9);"></i>
+                        <h3 class="illustration-title">Bienvenido a nuestra plataforma</h3>
+                        <p class="illustration-text">Únete a nuestra comunidad y accede a todas las funcionalidades exclusivas.</p>
+                        
+                        <ul class="features-list" style="list-style: none; padding-left: 0;">
+                            <li><i class="bi bi-check-circle"></i> Acceso seguro y protegido</li>
+                            <li><i class="bi bi-check-circle"></i> Dashboard personalizado</li>
+                            <li><i class="bi bi-check-circle"></i> Soporte prioritario</li>
+                            <li><i class="bi bi-check-circle"></i> Actualizaciones exclusivas</li>
+                        </ul>
+                    </div>
+                </div>
+                
+                <!-- Columna del formulario -->
+                <div class="col-lg-6">
+                    <div class="auth-form">
+                        <h1 class="form-title">Crear una cuenta</h1>
+                        
+                        <form id="registerForm">
+                            <!-- Nombre completo -->
+                            <div class="mb-4">
+                                <label for="fullName" class="form-label">Nombre Completo</label>
+                                <input type="text" class="form-control" id="fullName" placeholder="Ingresa tu nombre completo" required>
+                            </div>
+                            
+                            <!-- Correo electrónico -->
+                            <div class="mb-4">
+                                <label for="email" class="form-label">Correo Electrónico</label>
+                                <input type="email" class="form-control" id="email" placeholder="tucorreo@ejemplo.com" required>
+                            </div>
+                            
+                            <!-- Contraseña -->
+                            <div class="mb-4">
+                                <label for="password" class="form-label">Contraseña</label>
+                                <div class="password-container">
+                                    <input type="password" class="form-control" id="password" placeholder="Crea una contraseña segura" required>
+                                    <i class="bi bi-eye-slash password-toggle" id="togglePassword"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Confirmar contraseña -->
+                            <div class="mb-4">
+                                <label for="confirmPassword" class="form-label">Confirmar Contraseña</label>
+                                <div class="password-container">
+                                    <input type="password" class="form-control" id="confirmPassword" placeholder="Repite tu contraseña" required>
+                                    <i class="bi bi-eye-slash password-toggle" id="toggleConfirmPassword"></i>
+                                </div>
+                            </div>
+                            
+                            <!-- Términos y condiciones -->
+                            <div class="form-check mb-4">
+                                <input class="form-check-input" type="checkbox" id="termsCheck" required>
+                                <label class="form-check-label" for="termsCheck">
+                                    Acepto los <a href="#" class="terms-link">términos y condiciones</a>
+                                </label>
+                            </div>
+                            
+                            <!-- Botón de registro -->
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-person-plus me-2"></i> Registrarse
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="../js/registro.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar/ocultar contraseña
+            function setupPasswordToggle(toggleId, inputId) {
+                const toggle = document.getElementById(toggleId);
+                const input = document.getElementById(inputId);
+                
+                if (toggle && input) {
+                    toggle.addEventListener('click', function() {
+                        const type = input.getAttribute('type') === 'password' ? 'text' : 'password';
+                        input.setAttribute('type', type);
+                        this.classList.toggle('bi-eye');
+                        this.classList.toggle('bi-eye-slash');
+                    });
+                }
+            }
+            
+            setupPasswordToggle('togglePassword', 'password');
+            setupPasswordToggle('toggleConfirmPassword', 'confirmPassword');
+            
+            // Validación del formulario
+            const registerForm = document.getElementById('registerForm');
+            
+            if (registerForm) {
+                registerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    
+                    // Validar que las contraseñas coincidan
+                    const password = document.getElementById('password');
+                    const confirmPassword = document.getElementById('confirmPassword');
+                    
+                    if (password.value !== confirmPassword.value) {
+                        alert('Las contraseñas no coinciden');
+                        return;
+                    }
+                    
+                    // Validar términos y condiciones
+                    const termsCheck = document.getElementById('termsCheck');
+                    if (!termsCheck.checked) {
+                        alert('Debes aceptar los términos y condiciones');
+                        return;
+                    }
+                });
+            }
+        });
+    </script>
+</body>
+</html>

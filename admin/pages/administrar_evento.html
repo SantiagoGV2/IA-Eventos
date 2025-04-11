@@ -1,0 +1,1411 @@
+<!DOCTYPE html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Panel Premium - Gestión de Eventos</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
+    />
+    <style>
+      :root {
+        --primary-color: #e4022c;
+        --secondary-color: #273474;
+        --complementary-color: #394a9e;
+        --light-color: #f8f9fa;
+        --dark-color: #212529;
+        --soft-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        --card-radius: 12px;
+        --input-radius: 8px;
+        --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f5f7fa;
+        overflow-x: hidden;
+      }
+
+      /* Sidebar Premium */
+      .sidebar {
+        background: linear-gradient(180deg, var(--secondary-color), #1a2448);
+        color: white;
+        width: 280px;
+        min-height: 100vh;
+        padding: 25px;
+        transition: var(--transition);
+        position: fixed;
+        z-index: 1000;
+        box-shadow: 4px 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      .sidebar h5 {
+        padding: 15px 0;
+        margin-bottom: 25px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        display: flex;
+        align-items: center;
+      }
+
+      .sidebar h5::before {
+        content: "";
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        background-color: var(--primary-color);
+        border-radius: 50%;
+        margin-right: 12px;
+      }
+
+      .sidebar a {
+        color: rgba(255, 255, 255, 0.9);
+        text-decoration: none;
+        padding: 12px 18px;
+        margin: 6px 0;
+        border-radius: var(--input-radius);
+        display: flex;
+        align-items: center;
+        transition: var(--transition);
+        font-size: 0.95rem;
+        position: relative;
+        overflow: hidden;
+      }
+
+      .sidebar a::before {
+        content: "";
+        position: absolute;
+        left: -100%;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(228, 2, 44, 0.15),
+          transparent
+        );
+        transition: var(--transition);
+      }
+
+      .sidebar a:hover::before {
+        left: 100%;
+      }
+
+      .sidebar a i {
+        margin-right: 12px;
+        font-size: 1.1rem;
+        color: rgba(255, 255, 255, 0.7);
+        transition: var(--transition);
+      }
+
+      .sidebar a:hover {
+        background-color: rgba(255, 255, 255, 0.08);
+        transform: translateX(5px);
+        color: white;
+      }
+
+      .sidebar a:hover i {
+        color: var(--primary-color);
+      }
+
+      .sidebar a.active {
+        background-color: rgba(228, 2, 44, 0.2);
+        color: white;
+        font-weight: 500;
+        border-left: 3px solid var(--primary-color);
+      }
+
+      .sidebar a.active i {
+        color: var(--primary-color);
+      }
+
+      /* Main Content Premium */
+      .main-content {
+        margin-left: 280px;
+        transition: var(--transition);
+        min-height: 100vh;
+        background-color: #f5f7fa;
+      }
+
+      /* Navbar Premium */
+      .navbar {
+        background-color: white;
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.08);
+        padding: 15px 30px;
+        position: relative;
+        z-index: 900;
+      }
+
+      .navbar::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+        height: 2px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--complementary-color)
+        );
+      }
+
+      .brand-logo {
+        height: 42px;
+        margin-right: 15px;
+        transition: var(--transition);
+        filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.1));
+      }
+
+      .brand-logo:hover {
+        transform: translateY(-2px);
+        filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.15));
+      }
+
+      .user-avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--complementary-color)
+        );
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+        transition: var(--transition);
+        font-weight: bold;
+        border: 2px solid white;
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+      }
+
+      .user-avatar:hover {
+        transform: scale(1.1) rotate(5deg);
+        box-shadow: 0 5px 15px rgba(228, 2, 44, 0.3);
+      }
+
+      /* Botones Premium */
+      .btn-system {
+        background: linear-gradient(135deg, var(--primary-color), #c40226);
+        color: white;
+        border: none;
+        padding: 12px 25px;
+        border-radius: var(--input-radius);
+        font-weight: 500;
+        transition: var(--transition);
+        box-shadow: 0 4px 15px rgba(228, 2, 44, 0.3);
+        position: relative;
+        overflow: hidden;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .btn-system::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(
+          90deg,
+          transparent,
+          rgba(255, 255, 255, 0.2),
+          transparent
+        );
+        transition: var(--transition);
+      }
+
+      .btn-system:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(228, 2, 44, 0.4);
+      }
+
+      .btn-system:hover::before {
+        left: 100%;
+      }
+
+      .btn-outline-system {
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+        background-color: transparent;
+        font-weight: 500;
+        transition: var(--transition);
+      }
+
+      .btn-outline-system:hover {
+        background-color: var(--primary-color);
+        color: white;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 15px rgba(228, 2, 44, 0.2);
+      }
+
+      /* Mobile Menu Button Premium */
+      .mobile-menu-btn {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 20px;
+        z-index: 1100;
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--complementary-color)
+        );
+        color: white;
+        border: none;
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        font-size: 1.3rem;
+        cursor: pointer;
+        transition: var(--transition);
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+      }
+
+      .mobile-menu-btn:hover {
+        transform: scale(1.1) rotate(90deg);
+        box-shadow: 0 8px 25px rgba(228, 2, 44, 0.4);
+      }
+
+      /* Responsive Styles */
+      @media (max-width: 992px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.show {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .mobile-menu-btn {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+        }
+      }
+
+      /* Contenedor principal */
+      .container.py-4 {
+        padding-top: 40px !important;
+        padding-bottom: 40px !important;
+      }
+
+      /* Título principal */
+      h3.mb-4 {
+        color: var(--secondary-color);
+        font-weight: 600;
+        position: relative;
+        padding-bottom: 15px;
+        margin-bottom: 30px !important;
+      }
+
+      h3.mb-4::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--complementary-color)
+        );
+        border-radius: 3px;
+      }
+
+      /* Estilos para la gestión de eventos */
+      .event-card {
+        background-color: white;
+        border-radius: var(--card-radius);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 20px;
+        overflow: hidden;
+        transition: var(--transition);
+        position: relative;
+      }
+
+      .event-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: linear-gradient(
+          90deg,
+          var(--primary-color),
+          var(--complementary-color)
+        );
+      }
+
+      .event-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 15px 30px rgba(228, 2, 44, 0.1);
+      }
+
+      .event-header {
+        background: linear-gradient(
+          135deg,
+          var(--secondary-color),
+          var(--complementary-color)
+        );
+        color: white;
+        padding: 20px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      .event-body {
+        padding: 25px;
+      }
+
+      .event-footer {
+        padding: 15px 25px;
+        background-color: #f8f9fa;
+        display: flex;
+        justify-content: space-between;
+        border-top: 1px solid rgba(0, 0, 0, 0.05);
+      }
+
+      .event-status {
+        padding: 5px 15px;
+        border-radius: 20px;
+        font-size: 0.8rem;
+        font-weight: bold;
+        background-color: rgba(255, 255, 255, 0.2);
+      }
+
+      .status-active {
+        background-color: rgba(46, 204, 113, 0.2);
+        color: #27ae60;
+      }
+
+      .status-inactive {
+        background-color: rgba(149, 165, 166, 0.2);
+        color: #7f8c8d;
+      }
+
+      .status-canceled {
+        background-color: rgba(228, 2, 44, 0.2);
+        color: var(--primary-color);
+      }
+
+      .search-container {
+        background-color: white;
+        padding: 25px;
+        border-radius: var(--card-radius);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+        margin-bottom: 30px;
+      }
+
+      .badge-category {
+        background-color: rgba(39, 52, 116, 0.1);
+        color: var(--secondary-color);
+        padding: 8px 12px;
+        border-radius: var(--input-radius);
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+        margin-right: 8px;
+        margin-bottom: 8px;
+      }
+
+      .badge-category i {
+        margin-right: 5px;
+        font-size: 0.9rem;
+      }
+
+      .btn-action {
+        padding: 8px 15px;
+        font-size: 0.9rem;
+        border-radius: var(--input-radius);
+        margin-left: 10px;
+        transition: var(--transition);
+        display: inline-flex;
+        align-items: center;
+      }
+
+      .btn-edit {
+        background-color: rgba(57, 74, 158, 0.1);
+        color: var(--complementary-color);
+        border: 1px solid rgba(57, 74, 158, 0.3);
+      }
+
+      .btn-edit:hover {
+        background-color: rgba(57, 74, 158, 0.2);
+        transform: translateY(-2px);
+      }
+
+      .btn-delete {
+        background-color: rgba(228, 2, 44, 0.1);
+        color: var(--primary-color);
+        border: 1px solid rgba(228, 2, 44, 0.3);
+      }
+
+      .btn-delete:hover {
+        background-color: rgba(228, 2, 44, 0.2);
+        transform: translateY(-2px);
+      }
+
+      /* Estilos para los modales premium */
+      .bg-gradient-primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary-color),
+          var(--complementary-color)
+        );
+      }
+
+      .modal-header {
+        border-bottom: none;
+        padding: 1.5rem;
+        border-radius: var(--card-radius) var(--card-radius) 0 0 !important;
+      }
+
+      .modal-content {
+        border-radius: var(--card-radius) !important;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        border: none;
+      }
+
+      .modal-body {
+        padding: 2rem;
+      }
+
+      .icon-wrapper {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+      }
+
+      .section-header {
+        display: flex;
+        align-items: center;
+        padding-bottom: 10px;
+        border-bottom: 2px solid rgba(228, 2, 44, 0.1);
+        color: var(--secondary-color);
+      }
+
+      .section-header i {
+        color: var(--primary-color);
+        font-size: 1.1rem;
+      }
+
+      .section-title {
+        font-weight: 600;
+        color: var(--secondary-color);
+      }
+
+      .premium-form .form-label {
+        font-weight: 500;
+        color: var(--secondary-color);
+        margin-bottom: 0.5rem;
+      }
+
+      .premium-input .input-wrapper {
+        position: relative;
+      }
+
+      .premium-input .input-icon {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--primary-color);
+        font-size: 1.1rem;
+      }
+
+      .premium-input .form-control,
+      .premium-input .form-select {
+        padding-right: 45px;
+        border-radius: var(--input-radius);
+        border: 1px solid rgba(0, 0, 0, 0.1);
+        transition: var(--transition);
+      }
+
+      .premium-input .form-control:focus,
+      .premium-input .form-select:focus {
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 0.25rem rgba(228, 2, 44, 0.15);
+      }
+
+      .premium-input textarea {
+        min-height: 120px;
+        resize: vertical;
+      }
+
+      .modal-footer {
+        padding: 1.5rem;
+      }
+
+      /* Efecto hover para los inputs */
+      .premium-input .form-control:hover,
+      .premium-input .form-select:hover {
+        border-color: var(--primary-color);
+      }
+    </style>
+  </head>
+
+  <body>
+    <!-- Mobile Menu Button -->
+    <button class="mobile-menu-btn" id="mobileMenuBtn">
+      <i class="bi bi-list"></i>
+    </button>
+
+    <div class="d-flex">
+      <!-- Sidebar Completo -->
+      <div class="sidebar d-flex flex-column">
+        <h5 class="text-white">Panel Admin Premium</h5>
+        <a href="/admin/pages/adm_evento.html" class="admin-sidebar-btn"
+          ><i class="bi bi-person-gear"></i> Administrador</a
+        >
+        <a href="/admin/pages/administrar_evento.html" class="active"
+          ><i class="bi bi-calendar-event"></i>Gestionar Eventos</a
+        >
+        <a href="/admin/pages/administrar_categoria.html"
+          ><i class="bi bi-tags"></i>Gestionar Categorías</a
+        >
+        <a href="#"><i class="bi bi-search"></i> Buscador IA</a>
+
+        <div class="mt-auto"></div>
+        <a href="#" id="btnLogout" class="text-danger">
+          <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+        </a>
+      </div>
+
+      <!-- Main Content -->
+      <div class="main-content w-100">
+        <!-- Navbar Original -->
+        <nav class="navbar navbar-expand-lg">
+          <div class="container-fluid">
+            <div class="d-flex align-items-center">
+              <img
+                src="/admin/asset/img/Nuevos logos/Fusoft complete.png"
+                alt="Logo Fusoft"
+                class="brand-logo"
+              />
+              <img
+                src="/admin/asset/img/Official Uniempresarial bussines material/Logo uniempresarial rectangular CCB_Logo Completo Uniempresarial a color.png"
+                alt="Logo Uniempresarial"
+                class="brand-logo d-none d-md-block"
+              />
+            </div>
+            <div class="d-flex align-items-center">
+              <div class="user-avatar" id="user-avatar">JP</div>
+              <span id="usuario-info" class="d-none d-lg-inline ms-2"
+                >Administrador</span
+              >
+            </div>
+          </div>
+        </nav>
+
+        <!-- Contenido de Gestión de Eventos -->
+        <div class="container py-4">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3>Gestionar Eventos</h3>
+            <button
+              class="btn btn-system"
+              data-bs-toggle="modal"
+              data-bs-target="#modalCrearEvento"
+            >
+              <i class="bi bi-plus-circle-fill me-2"></i>Nuevo Evento
+            </button>
+          </div>
+
+          <!-- Barra de Búsqueda y Filtros -->
+          <div class="search-container">
+            <div class="row g-3">
+              <div class="col-md-8">
+                <div class="form-group premium-input">
+                  <label for="buscarEvento" class="form-label"
+                    >Buscar Eventos</label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="buscarEvento"
+                      placeholder="Buscar por título, descripción..."
+                    />
+                    <button class="btn btn-system" type="button" id="btnBuscar">
+                      <i class="bi bi-search me-2"></i>Buscar
+                    </button>
+                  </div>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="form-group premium-input">
+                  <label for="filtrarEstado" class="form-label"
+                    >Filtrar por estado</label
+                  >
+                  <div class="input-wrapper">
+                    <select class="form-select" id="filtrarEstado">
+                      <option value="todos">Todos los estados</option>
+                      <option value="activo">Activo</option>
+                      <option value="inactivo">Inactivo</option>
+                      <option value="cancelado">Cancelado</option>
+                    </select>
+                    <i class="bi bi-filter-circle input-icon"></i>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Listado de Eventos -->
+          <div id="listaEventos">
+            <!-- Ejemplo de evento 1 -->
+            <div class="event-card">
+              <div class="event-header">
+                <h5 class="mb-0 text-white">
+                  Conferencia Internacional de Tecnología
+                </h5>
+                <span class="event-status status-active">Activo</span>
+              </div>
+              <div class="event-body">
+                <p class="text-muted">
+                  Conferencia sobre las últimas tendencias en tecnología e
+                  innovación para el 2023.
+                </p>
+                <div class="d-flex flex-wrap">
+                  <span class="badge-category"
+                    ><i class="bi bi-tag-fill"></i>Conferencia</span
+                  >
+                  <span class="badge-category"
+                    ><i class="bi bi-calendar-event"></i>15 Oct 2023, 09:00
+                    AM</span
+                  >
+                  <span class="badge-category"
+                    ><i class="bi bi-geo-alt-fill"></i>Centro de
+                    Convenciones</span
+                  >
+                </div>
+                <div class="d-flex align-items-center mt-3">
+                  <i class="bi bi-link-45deg me-2 text-primary"></i>
+                  <a href="#" class="text-primary"
+                    >https://conferencia-tecnologia.com</a
+                  >
+                </div>
+              </div>
+              <div class="event-footer">
+                <small class="text-muted">Creado: 12/08/2023</small>
+                <div>
+                  <button
+                    class="btn-action btn-edit"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditarEvento"
+                  >
+                    <i class="bi bi-pencil-fill me-1"></i> Editar
+                  </button>
+                  <button
+                    class="btn-action btn-delete"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalConfirmarEliminar"
+                  >
+                    <i class="bi bi-trash-fill me-1"></i> Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+
+            <!-- Ejemplo de evento 2 -->
+            <div class="event-card">
+              <div class="event-header">
+                <h5 class="mb-0 text-white">Taller de Marketing Digital</h5>
+                <span class="event-status status-inactive">Inactivo</span>
+              </div>
+              <div class="event-body">
+                <p class="text-muted">
+                  Taller práctico para aprender las estrategias más efectivas de
+                  marketing digital.
+                </p>
+                <div class="d-flex flex-wrap">
+                  <span class="badge-category"
+                    ><i class="bi bi-tag-fill"></i>Taller</span
+                  >
+                  <span class="badge-category"
+                    ><i class="bi bi-calendar-event"></i>22 Nov 2023, 02:00
+                    PM</span
+                  >
+                  <span class="badge-category"
+                    ><i class="bi bi-geo-alt-fill"></i>Aula 302</span
+                  >
+                </div>
+                <div class="d-flex align-items-center mt-3">
+                  <i class="bi bi-link-45deg me-2 text-muted"></i>
+                  <span class="text-muted">No hay enlace disponible</span>
+                </div>
+              </div>
+              <div class="event-footer">
+                <small class="text-muted">Creado: 05/09/2023</small>
+                <div>
+                  <button
+                    class="btn-action btn-edit"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalEditarEvento"
+                  >
+                    <i class="bi bi-pencil-fill me-1"></i> Editar
+                  </button>
+                  <button
+                    class="btn-action btn-delete"
+                    data-bs-toggle="modal"
+                    data-bs-target="#modalConfirmarEliminar"
+                  >
+                    <i class="bi bi-trash-fill me-1"></i> Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Crear Evento -->
+          <div
+            class="modal fade system-modal"
+            id="modalCrearEvento"
+            tabindex="-1"
+            aria-labelledby="modalCrearEventoLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content border-0">
+                <div class="modal-header bg-gradient-primary text-white">
+                  <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-white me-3">
+                      <i class="bi bi-calendar-plus text-primary"></i>
+                    </div>
+                    <h5 class="modal-title mb-0">Crear Nuevo Evento</h5>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div class="modal-body p-4 p-md-5">
+                  <form class="system-form premium-form" id="formCrearEvento">
+                    <div class="section-header mb-4">
+                      <i class="bi bi-info-circle-fill me-2"></i>
+                      <h6 class="section-title mb-0">Información Básica</h6>
+                    </div>
+
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="tituloEvento" class="form-label"
+                            >Título del Evento</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="tituloEvento"
+                              placeholder="Ej: Conferencia Internacional"
+                              required
+                            />
+                            <i class="bi bi-card-heading input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="categoria" class="form-label"
+                            >Categoría</label
+                          >
+                          <div class="input-wrapper">
+                            <select class="form-select" id="categoria" required>
+                              <option value="">Seleccione categoría</option>
+                              <option value="conferencia">Conferencia</option>
+                              <option value="taller">Taller</option>
+                              <option value="seminario">Seminario</option>
+                              <option value="webinar">Webinar</option>
+                            </select>
+                            <i class="bi bi-tag-fill input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group premium-input mt-4">
+                      <label for="descripcion" class="form-label"
+                        >Descripción</label
+                      >
+                      <div class="input-wrapper">
+                        <textarea
+                          class="form-control"
+                          id="descripcion"
+                          rows="4"
+                          placeholder="Describa el evento en detalle..."
+                          required
+                        ></textarea>
+                        <i class="bi bi-text-paragraph input-icon"></i>
+                      </div>
+                    </div>
+
+                    <div class="section-header mb-4 mt-5">
+                      <i class="bi bi-clock-fill me-2"></i>
+                      <h6 class="section-title mb-0">Fecha y Hora</h6>
+                    </div>
+
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="fechaInicio" class="form-label"
+                            >Fecha Inicio</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="datetime-local"
+                              class="form-control"
+                              id="fechaInicio"
+                              required
+                            />
+                            <i class="bi bi-calendar-event input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="fechaFin" class="form-label"
+                            >Fecha Fin</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="datetime-local"
+                              class="form-control"
+                              id="fechaFin"
+                              required
+                            />
+                            <i class="bi bi-calendar-event input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="section-header mb-4 mt-5">
+                      <i class="bi bi-geo-alt-fill me-2"></i>
+                      <h6 class="section-title mb-0">Ubicación</h6>
+                    </div>
+
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="ubicacion" class="form-label"
+                            >Lugar</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="ubicacion"
+                              placeholder="Ej: Centro de Convenciones"
+                              required
+                            />
+                            <i class="bi bi-geo-alt-fill input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="enlace" class="form-label">Enlace</label>
+                          <div class="input-wrapper">
+                            <input
+                              type="url"
+                              class="form-control"
+                              id="enlace"
+                              placeholder="https://"
+                            />
+                            <i class="bi bi-link-45deg input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group premium-input mt-4">
+                      <label for="estado" class="form-label">Estado</label>
+                      <div class="input-wrapper">
+                        <select class="form-select" id="estado" required>
+                          <option value="activo">Activo</option>
+                          <option value="inactivo">Inactivo</option>
+                          <option value="cancelado">Cancelado</option>
+                        </select>
+                        <i class="bi bi-circle-fill input-icon"></i>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div
+                  class="modal-footer border-top-0 bg-light d-flex justify-content-between"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-outline-system"
+                    data-bs-dismiss="modal"
+                  >
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    form="formCrearEvento"
+                    class="btn btn-system"
+                  >
+                    <i class="bi bi-check-circle-fill me-2"></i>Publicar Evento
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Modal Editar Evento -->
+          <div
+            class="modal fade system-modal"
+            id="modalEditarEvento"
+            tabindex="-1"
+            aria-labelledby="modalEditarEventoLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog modal-lg modal-dialog-centered">
+              <div class="modal-content border-0">
+                <div class="modal-header bg-gradient-primary text-white">
+                  <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-white me-3">
+                      <i class="bi bi-pencil-fill text-primary"></i>
+                    </div>
+                    <h5 class="modal-title mb-0">Editar Evento</h5>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div class="modal-body p-4 p-md-5">
+                  <form class="system-form premium-form" id="formEditarEvento">
+                    <div class="section-header mb-4">
+                      <i class="bi bi-info-circle-fill me-2"></i>
+                      <h6 class="section-title mb-0">Información Básica</h6>
+                    </div>
+
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="editarTituloEvento" class="form-label"
+                            >Título del Evento</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="editarTituloEvento"
+                              value="Conferencia Internacional de Tecnología"
+                              required
+                            />
+                            <i class="bi bi-card-heading input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="editarCategoria" class="form-label"
+                            >Categoría</label
+                          >
+                          <div class="input-wrapper">
+                            <select
+                              class="form-select"
+                              id="editarCategoria"
+                              required
+                            >
+                              <option value="">Seleccione categoría</option>
+                              <option value="conferencia" selected>
+                                Conferencia
+                              </option>
+                              <option value="taller">Taller</option>
+                              <option value="seminario">Seminario</option>
+                              <option value="webinar">Webinar</option>
+                            </select>
+                            <i class="bi bi-tag-fill input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group premium-input mt-4">
+                      <label for="editarDescripcion" class="form-label"
+                        >Descripción</label
+                      >
+                      <div class="input-wrapper">
+                        <textarea
+                          class="form-control"
+                          id="editarDescripcion"
+                          rows="4"
+                          required
+                        >
+Conferencia sobre las últimas tendencias en tecnología e innovación para el 2023.</textarea
+                        >
+                        <i class="bi bi-text-paragraph input-icon"></i>
+                      </div>
+                    </div>
+
+                    <div class="section-header mb-4 mt-5">
+                      <i class="bi bi-clock-fill me-2"></i>
+                      <h6 class="section-title mb-0">Fecha y Hora</h6>
+                    </div>
+
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="editarFechaInicio" class="form-label"
+                            >Fecha Inicio</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="datetime-local"
+                              class="form-control"
+                              id="editarFechaInicio"
+                              value="2023-10-15T09:00"
+                              required
+                            />
+                            <i class="bi bi-calendar-event input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="editarFechaFin" class="form-label"
+                            >Fecha Fin</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="datetime-local"
+                              class="form-control"
+                              id="editarFechaFin"
+                              value="2023-10-15T18:00"
+                              required
+                            />
+                            <i class="bi bi-calendar-event input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="section-header mb-4 mt-5">
+                      <i class="bi bi-geo-alt-fill me-2"></i>
+                      <h6 class="section-title mb-0">Ubicación</h6>
+                    </div>
+
+                    <div class="row g-4">
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="editarUbicacion" class="form-label"
+                            >Lugar</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="text"
+                              class="form-control"
+                              id="editarUbicacion"
+                              value="Centro de Convenciones"
+                              required
+                            />
+                            <i class="bi bi-geo-alt-fill input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                      <div class="col-md-6">
+                        <div class="form-group premium-input">
+                          <label for="editarEnlace" class="form-label"
+                            >Enlace</label
+                          >
+                          <div class="input-wrapper">
+                            <input
+                              type="url"
+                              class="form-control"
+                              id="editarEnlace"
+                              value="https://conferencia-tecnologia.com"
+                            />
+                            <i class="bi bi-link-45deg input-icon"></i>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div class="form-group premium-input mt-4">
+                      <label for="editarEstado" class="form-label"
+                        >Estado</label
+                      >
+                      <div class="input-wrapper">
+                        <select class="form-select" id="editarEstado" required>
+                          <option value="activo" selected>Activo</option>
+                          <option value="inactivo">Inactivo</option>
+                          <option value="cancelado">Cancelado</option>
+                        </select>
+                        <i class="bi bi-circle-fill input-icon"></i>
+                      </div>
+                    </div>
+                  </form>
+                </div>
+                <div
+                  class="modal-footer border-top-0 bg-light d-flex justify-content-between"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-outline-system"
+                    data-bs-dismiss="modal"
+                  >
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                  </button>
+                  <button
+                    type="submit"
+                    form="formEditarEvento"
+                    class="btn btn-system"
+                  >
+                    <i class="bi bi-check-circle-fill me-2"></i>Guardar Cambios
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Modal Confirmar Eliminación -->
+          <div
+            class="modal fade system-modal"
+            id="modalConfirmarEliminar"
+            tabindex="-1"
+            aria-labelledby="modalConfirmarEliminarLabel"
+            aria-hidden="true"
+          >
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content border-0">
+                <div class="modal-header bg-danger text-white">
+                  <div class="d-flex align-items-center">
+                    <div class="icon-wrapper bg-white me-3">
+                      <i
+                        class="bi bi-exclamation-triangle-fill text-danger"
+                      ></i>
+                    </div>
+                    <h5 class="modal-title mb-0">Confirmar Eliminación</h5>
+                  </div>
+                  <button
+                    type="button"
+                    class="btn-close btn-close-white"
+                    data-bs-dismiss="modal"
+                    aria-label="Close"
+                  ></button>
+                </div>
+                <div class="modal-body p-4 p-md-5 text-center">
+                  <i
+                    class="bi bi-trash-fill text-danger"
+                    style="font-size: 3rem; margin-bottom: 20px"
+                  ></i>
+                  <h5>¿Estás seguro de eliminar este evento?</h5>
+                  <p class="text-muted">
+                    "Conferencia Internacional de Tecnología" será eliminado
+                    permanentemente. Esta acción no se puede deshacer.
+                  </p>
+                </div>
+                <div
+                  class="modal-footer border-top-0 bg-light d-flex justify-content-center"
+                >
+                  <button
+                    type="button"
+                    class="btn btn-outline-system me-3"
+                    data-bs-dismiss="modal"
+                  >
+                    <i class="bi bi-x-circle me-2"></i>Cancelar
+                  </button>
+                  <button
+                    type="button"
+                    class="btn btn-danger"
+                    id="confirmarEliminar"
+                  >
+                    <i class="bi bi-trash-fill me-2"></i>Sí, Eliminar
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Toggle sidebar on mobile
+      document
+        .getElementById("mobileMenuBtn")
+        .addEventListener("click", function () {
+          document.querySelector(".sidebar").classList.toggle("show");
+        });
+
+      // Search functionality
+      document
+        .getElementById("btnBuscar")
+        .addEventListener("click", function () {
+          const searchTerm = document
+            .getElementById("buscarEvento")
+            .value.toLowerCase();
+          const filterStatus = document.getElementById("filtrarEstado").value;
+          const eventCards = document.querySelectorAll(".event-card");
+
+          eventCards.forEach((card) => {
+            const title = card
+              .querySelector(".event-header h5")
+              .textContent.toLowerCase();
+            const description = card
+              .querySelector(".event-body p")
+              .textContent.toLowerCase();
+            const status = card
+              .querySelector(".event-status")
+              .textContent.toLowerCase();
+
+            const matchesSearch =
+              title.includes(searchTerm) || description.includes(searchTerm);
+            const matchesStatus =
+              filterStatus === "todos" || status.includes(filterStatus);
+
+            if (matchesSearch && matchesStatus) {
+              card.style.display = "block";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+
+      // Filter functionality
+      document
+        .getElementById("filtrarEstado")
+        .addEventListener("change", function () {
+          document.getElementById("btnBuscar").click();
+        });
+
+      // Form submission handlers
+      document
+        .getElementById("formCrearEvento")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          alert("Evento creado exitosamente");
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("modalCrearEvento")
+          );
+          modal.hide();
+          // Aquí iría la lógica para agregar el nuevo evento a la lista
+        });
+
+      document
+        .getElementById("formEditarEvento")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          alert("Evento actualizado exitosamente");
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("modalEditarEvento")
+          );
+          modal.hide();
+          // Aquí iría la lógica para actualizar el evento en la lista
+        });
+
+      // Delete confirmation handler
+      document
+        .getElementById("confirmarEliminar")
+        .addEventListener("click", function () {
+          alert("Evento eliminado exitosamente");
+          const modal = bootstrap.Modal.getInstance(
+            document.getElementById("modalConfirmarEliminar")
+          );
+          modal.hide();
+          // Aquí iría la lógica para eliminar el evento de la lista
+        });
+
+      // Asignar eventos a los botones de editar y eliminar
+      document.querySelectorAll(".btn-edit").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          // Aquí puedes cargar los datos del evento en el modal de edición
+          const eventCard = this.closest(".event-card");
+          const eventTitle =
+            eventCard.querySelector(".event-header h5").textContent;
+          // ... cargar otros datos según sea necesario
+        });
+      });
+
+      document.querySelectorAll(".btn-delete").forEach((btn) => {
+        btn.addEventListener("click", function () {
+          // Aquí puedes configurar qué evento se va a eliminar
+          const eventCard = this.closest(".event-card");
+          const eventTitle =
+            eventCard.querySelector(".event-header h5").textContent;
+          document.querySelector(
+            "#modalConfirmarEliminar .modal-body h5"
+          ).textContent = `¿Estás seguro de eliminar el evento "${eventTitle}"?`;
+        });
+      });
+      // Toggle sidebar on mobile
+      document
+        .getElementById("mobileMenuBtn")
+        .addEventListener("click", function () {
+          document.querySelector(".sidebar").classList.toggle("show");
+        });
+
+      // Search functionality
+      document
+        .getElementById("btnBuscar")
+        .addEventListener("click", function () {
+          const searchTerm = document
+            .getElementById("buscarEvento")
+            .value.toLowerCase();
+          const filterStatus = document.getElementById("filtrarEstado").value;
+          const eventCards = document.querySelectorAll(".event-card");
+
+          eventCards.forEach((card) => {
+            const title = card
+              .querySelector(".event-header h5")
+              .textContent.toLowerCase();
+            const description = card
+              .querySelector(".event-body p")
+              .textContent.toLowerCase();
+            const status = card
+              .querySelector(".event-status")
+              .textContent.toLowerCase();
+
+            const matchesSearch =
+              title.includes(searchTerm) || description.includes(searchTerm);
+            const matchesStatus =
+              filterStatus === "todos" || status.includes(filterStatus);
+
+            if (matchesSearch && matchesStatus) {
+              card.style.display = "block";
+            } else {
+              card.style.display = "none";
+            }
+          });
+        });
+
+      // Filter functionality
+      document
+        .getElementById("filtrarEstado")
+        .addEventListener("change", function () {
+          document.getElementById("btnBuscar").click();
+        });
+    </script>
+  </body>
+</html>

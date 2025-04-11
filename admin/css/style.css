@@ -1,0 +1,300 @@
+  :root {
+    --primary-color: #e4022c;
+    --secondary-color: #273474;
+    --complementary-color: #394a9e;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --soft-shadow: 0 4px 20px rgba(0,0,0,0.08);
+    --card-radius: 16px;
+    --input-radius: 10px;
+    --transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  }
+
+  body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--light-color);
+    overflow-x: hidden;
+  }
+
+  .system-card h4 { 
+    color: var(--secondary-color) !important; /* Elimina el style inline */
+  }
+
+  /* Sidebar Responsivo */
+  .sidebar {
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    left: 0;
+    top: 0;
+    background: linear-gradient(180deg, var(--secondary-color), var(--complementary-color));
+    color: white;
+    padding: 1.5rem 1rem;
+    z-index: 1000;
+    transition: var(--transition);
+    transform: translateX(-280px);
+  }
+
+  .sidebar.active {
+    transform: translateX(0);
+    box-shadow: 5px 0 15px rgba(0,0,0,0.2);
+  }
+
+  .sidebar h5 {
+    color: white;
+    text-align: center;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 1.5rem;
+  }
+
+  .sidebar a {
+    color: rgba(255,255,255,0.9);
+    text-decoration: none;
+    padding: 0.75rem 1.25rem;
+    margin: 0.25rem 0;
+    display: block;
+    border-radius: 6px;
+    transition: var(--transition);
+  }
+
+  .sidebar a:hover {
+    background-color: rgba(255,255,255,0.1);
+    color: white;
+    transform: translateX(5px);
+  }
+
+  .sidebar a i {
+    width: 24px;
+    text-align: center;
+    margin-right: 10px;
+  }
+
+  .sidebar-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.5);
+    z-index: 999;
+    display: none;
+  }
+
+  /* Navbar Original Completo */
+  .navbar {
+    background-color: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+    padding: 0.75rem 1.5rem;
+  }
+
+  .brand-logo {
+    height: 38px;
+    margin-right: 15px;
+    object-fit: contain;
+  }
+
+  .user-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: var(--secondary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+
+  /* Contenido Principal */
+  .main-content {
+    margin-left: 0;
+    min-height: 100vh;
+    transition: var(--transition);
+  }
+
+  /* Cards Originales con Mejoras Responsivas */
+  .system-card {
+    background: white;
+    border-radius: var(--card-radius);
+    padding: 1.75rem;
+    height: 100%;
+    box-shadow: var(--soft-shadow);
+    transition: var(--transition);
+    border: none;
+    position: relative;
+    overflow: hidden;
+    text-align: center;
+  }
+
+  .system-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 5px;
+    background: linear-gradient(90deg, var(--primary-color), var(--complementary-color));
+  }
+
+  .system-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  }
+
+  .system-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 1.5rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color), var(--complementary-color));
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    box-shadow: 0 6px 15px rgba(228, 2, 44, 0.3);
+  }
+
+  /* Estilos Originales de Formularios (Restaurados) */
+  .system-form .form-group {
+    position: relative;
+    margin-bottom: 1.5rem;
+  }
+
+  .system-form .form-label {
+    font-weight: 600;
+    color: var(--secondary-color);
+    margin-bottom: 0.5rem;
+    display: block;
+  }
+
+  .system-form .form-control, 
+  .system-form .form-select {
+    border-radius: var(--input-radius);
+    padding: 0.75rem 1rem;
+    border: 1px solid #e0e0e0;
+    transition: var(--transition);
+    background-color: #f9fafc;
+  }
+
+  .system-form .form-control:focus,
+  .system-form .form-select:focus {
+    border-color: var(--complementary-color);
+    box-shadow: 0 0 0 0.2rem rgba(57, 74, 158, 0.15);
+    background-color: white;
+  }
+
+  .system-form textarea.form-control {
+    min-height: 120px;
+  }
+
+  .input-icon {
+    position: absolute;
+    right: 15px;
+    top: 38px;
+    color: var(--complementary-color);
+  }
+
+  .section-title {
+    color: var(--secondary-color);
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin: 1.5rem 0 1rem;
+    padding-bottom: 0.5rem;
+    border-bottom: 2px solid rgba(39, 52, 116, 0.1);
+    display: flex;
+    align-items: center;
+  }
+
+  .section-title i {
+    margin-right: 10px;
+  }
+
+  .datetime-wrapper {
+    position: relative;
+  }
+
+  .datetime-wrapper::after {
+    content: '\F133';
+    font-family: 'bootstrap-icons';
+    position: absolute;
+    right: 15px;
+    top: 38px;
+    color: var(--complementary-color);
+    pointer-events: none;
+  }
+
+  /* Botones Originales */
+  .btn-system {
+    background: linear-gradient(135deg, var(--primary-color), var(--complementary-color));
+    border: none;
+    color: white;
+    padding: 0.75rem 1.5rem;
+    border-radius: 50px;
+    font-weight: 600;
+    transition: var(--transition);
+    box-shadow: 0 4px 15px rgba(228, 2, 44, 0.2);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .btn-system:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(228, 2, 44, 0.3);
+    color: white;
+  }
+
+  .btn-system i {
+    margin-right: 8px;
+  }
+
+  .btn-outline-system {
+    border: 2px solid var(--secondary-color);
+    color: var(--secondary-color);
+    font-weight: 600;
+    border-radius: 50px;
+    padding: 0.65rem 1.25rem;
+    transition: var(--transition);
+    background-color: transparent;
+  }
+
+  .btn-outline-system:hover {
+    background: var(--secondary-color);
+    color: white;
+  }
+
+  /* Mobile Menu Button */
+  .mobile-menu-btn {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: white;
+    border: none;
+    color: var(--secondary-color);
+    font-size: 1.25rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1100;
+  }
+
+  /* Media Queries para Responsividad */
+  @media (min-width: 992px) {
+    .sidebar {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 280px;
+    }
+    
+    .mobile-menu-btn {
+        display: none;
+    }
+  }
