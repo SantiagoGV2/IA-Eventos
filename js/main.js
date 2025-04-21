@@ -1,3 +1,4 @@
+let eventosGuardadosIds = [];
 document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("btnBuscar").addEventListener("click", buscarEventos);
     document.getElementById("btnLogout").addEventListener("click", cerrarSesion);
@@ -50,9 +51,37 @@ async function obtenerUsuario() {
         console.error("Error al obtener usuario:", error);
         alert(error.message);
         localStorage.removeItem("jwtToken");
-        window.location.href = "/index.html.html";
+        window.location.href = "/index.html";
+    }
+
+    await obtenerEventosGuardadosIds();
+}
+
+async function obtenerEventosGuardadosIds() {
+    try {
+        const token = localStorage.getItem("jwtToken");
+        if (!token || !token.startsWith("Bearer ")) return;
+
+        const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoUsuario`, {
+            headers: {
+                "Authorization": token,
+                "Content-Type": "application/json"
+            }
+        });
+
+        if (!response.ok) throw new Error("No se pudieron obtener los eventos guardados");
+
+        const eventos = await response.json();
+        console.log("Eventos recibidos:", eventos);
+        eventosGuardadosIds = eventos.map(e => ({
+            id: e.eveId,
+            titulo: e.eveTitulo
+        }));
+    } catch (error) {
+        console.error("Error al obtener IDs de eventos guardados:", error);
     }
 }
+
 
 function cerrarSesion() {
     localStorage.removeItem('jwtToken');
@@ -145,13 +174,40 @@ async function buscarEventos() {
                                         <i class="bi bi-link-45deg"></i> Ver evento
                                     </a>
                                     ` : ''}
+                                    ${!eventosGuardadosIds.includes(evento.eveId) ? `
+                                    <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveId}">
+                                        <i class="bi bi-bookmark-plus"></i> Guardar
+                                    </button>
+                                    ` : `
+                                    <div class="mt-2 text-success">
+                                        <i class="bi bi-bookmark-check-fill"></i> Ya guardado
+                                    </div>
+                                    `}
+                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="whatsapp">
+                                        <i class="bi bi-share-fill"></i> Compartir por WhatsApp
+                                    </button>
+                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="gmail">
+                                        <i class="bi bi-share-fill"></i> Compartir por Gmail
+                                    </button>
                                 </div>
                             </div>
                         </div>
                     `).join('')}
                 </div>
             `;
-
+            document.querySelectorAll(".guardar-evento-btn").forEach(button => {
+                button.addEventListener("click", async (e) => {
+                    const eventoId = e.currentTarget.getAttribute("data-id");
+                    await guardarEvento(eventoId, e.currentTarget); // <- se pasa el botón
+                });
+            });        
+            document.querySelectorAll(".compartir-evento-btn").forEach(button => {
+                button.addEventListener("click", async (e) => {
+                    const eventoId = e.currentTarget.getAttribute("data-id");
+                    const medio = e.currentTarget.getAttribute("data-medio");
+                    await compartirEvento(eventoId, medio);
+                });
+            });                                       
         }, 500);
     } catch (error) {
         console.error("Error al obtener eventos:", error);
@@ -159,7 +215,111 @@ async function buscarEventos() {
         errorMessage.classList.remove("d-none");
         loading.classList.add("d-none");
     }
+    
 }
+
+async function compartirEvento(eventoId, medio) {
+    const token = localStorage.getItem("jwtToken");
+    if (!token || !token.startsWith("Bearer ")) {
+        alert("Usuario no autenticado");
+        return;
+    }
+
+    try {
+        const response = await fetch("http://localhost:8080/project-AI/compartir", {
+            method: "POST",
+            headers: {
+                "Authorization": token,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                evento: {
+                    eveId: parseInt(eventoId)
+                },
+                eveCompMedio: medio
+            })
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "Error al compartir el evento");
+        }
+
+        const resultado = await response.json();
+        alert("✅ Evento compartido exitosamente");
+        console.log("Evento compartido:", resultado);
+
+        // Abrir enlace dependiendo del medio
+        const titulo = encodeURIComponent(resultado.eveTitulo || "Evento");
+        const enlace = encodeURIComponent(resultado.eveEnlace || "http://localhost:8080/");
+        const mensaje = encodeURIComponent(`¡Hola! Te comparto este evento: ${titulo}. Puedes verlo aquí: ${enlace}`);
+
+        // Copiar enlace al portapapeles
+        navigator.clipboard.writeText(decodeURIComponent(enlace))
+        .then(() => {
+        console.log("Enlace copiado al portapapeles:", decodeURIComponent(enlace));
+        })
+        .catch(err => {
+        console.warn("No se pudo copiar el enlace al portapapeles:", err);
+        });
+        if (medio === "whatsapp") {
+            window.open(`https://wa.me/?text=${mensaje}`, "_blank");
+        } else if (medio === "gmail") {
+            const asunto = encodeURIComponent(`Te comparto un evento: ${titulo}`);
+            window.open(`mailto:?subject=${asunto}&body=${mensaje}`, "_blank");
+        }
+
+    } catch (error) {
+        console.error("Error al compartir evento:", error);
+        alert("❌ No se pudo compartir el evento");
+    }
+}
+
+
+async function guardarEvento(eventoId, button) {
+    const token = localStorage.getItem("jwtToken");
+    if (!token || !token.startsWith("Bearer ")) {
+        alert("Usuario no autenticado");
+        return;
+    }
+
+    // Desactiva el botón para evitar múltiples clics
+    button.disabled = true;
+    button.textContent = "Guardando...";
+
+    const body = {
+        evento: { eveId: parseInt(eventoId) }
+    };
+
+    try {
+        const response = await fetch("http://localhost:8080/project-AI/eventoGuardadoAG", {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "Authorization": token
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (response.ok) {
+            alert("Evento guardado exitosamente.");
+            button.textContent = "Guardado";
+        } else if (response.status === 406) {
+            alert("El evento ya está guardado.");
+            button.textContent = "Ya guardado";
+        } else {
+            alert("No se pudo guardar el evento.");
+            button.textContent = "Reintentar";
+            button.disabled = false;
+        }
+    } catch (error) {
+        console.error("Error al guardar evento:", error);
+        alert("Error al guardar evento.");
+        button.textContent = "Error";
+        button.disabled = false;
+    }
+}
+
 
 async function obtenerEventosPorUsuario() {
     const resultsContainer = document.getElementById("resultsContainer");
@@ -176,7 +336,7 @@ async function obtenerEventosPorUsuario() {
             throw new Error("No hay token disponible o es inválido");
         }
 
-        const response = await fetch("http://localhost:8080/project-AI/eventosU", {
+        const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoUsuario`, {
             method: "GET",
             headers: {
                 "Authorization": token,
@@ -185,16 +345,14 @@ async function obtenerEventosPorUsuario() {
         });
 
         if (!response.ok) {
-            if (response.status === 401) throw new Error("Sesión expirada. Inicie sesión nuevamente.");
-            if (response.status === 404) throw new Error("Usuario no encontrado.");
-            throw new Error("Error al obtener los eventos.");
+            throw new Error("Error al obtener los eventos guardados.");
         }
 
         const eventos = await response.json();
         loading.classList.add("d-none");
 
         if (!Array.isArray(eventos) || eventos.length === 0) {
-            errorMessage.textContent = "No hay eventos asociados a este usuario.";
+            errorMessage.textContent = "No tienes eventos guardados.";
             errorMessage.classList.remove("d-none");
             return;
         }
@@ -205,33 +363,38 @@ async function obtenerEventosPorUsuario() {
                     <div class="col-12 col-md-6 col-lg-4 mb-4">
                         <div class="event-card h-100">  
                             <div class="event-body card-body">
-                                <h3 class="event-title card-title">${evento.eveTitulo}</h3>
-                                <p class="event-description card-text">${evento.eveDescripcion || 'Descripción no disponible'}</p>
+                                <h3 class="event-title card-title">${evento.eventoTitulo}</h3>
+                                <p class="event-description card-text">${evento.eventoDescripcion || 'Descripción no disponible'}</p>
                                 
                                 <div class="event-details">
                                     <div class="detail-item">
                                         <i class="bi bi-calendar"></i>
-                                        <span>${formatearFecha(evento.eveFechaInicio)} - ${formatearFecha(evento.eveFechaFin)}</span>
+                                        <span>${formatearFecha(evento.eventoFechaInicio)} - ${formatearFecha(evento.eventoFechaFin)}</span>
                                     </div>
                                     <div class="detail-item">
                                         <i class="bi bi-geo-alt"></i>
-                                        <span>${evento.eveUbicacion || "Ubicación no disponible"}</span>
+                                        <span>${evento.eventoUbicacion || "Ubicación no disponible"}</span>
                                     </div>
                                     <div class="detail-item">
                                         <i class="bi bi-bookmarks"></i>
-                                        <span>${evento.eveCategoria || "Categoria no disponible"}</span>
+                                        <span>${evento.eventoCategoria || "Categoría no disponible"}</span>
                                     </div>
                                 </div>
                                 
-                                ${evento.eveEnlace ? `
-                                <a href="${evento.eveEnlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
+                                ${evento.eventoEnlace ? `
+                                <a href="${evento.eventoEnlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
                                     <i class="bi bi-link-45deg"></i> Ver evento
-                                </a>
-                                ` : ''}
-                                
+                                </a>` : ''}
+
+                                <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="whatsapp">
+                                    <i class="bi bi-share-fill"></i> Compartir por WhatsApp
+                                </button>
+                                <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="gmail">
+                                    <i class="bi bi-share-fill"></i> Compartir por Gmail
+                                </button>
                                 <div class="event-status mt-2">
-                                    <span class="badge ${evento.eveEstado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'}">
-                                        ${evento.eveEstado}
+                                    <span class="badge ${evento.eventoEstado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'}">
+                                        ${evento.eventoEstado}
                                     </span>
                                 </div>
                             </div>
@@ -240,6 +403,15 @@ async function obtenerEventosPorUsuario() {
                 `).join('')}
             </div>
         `;
+        // Asigna funcionalidad a los botones de compartir
+        document.querySelectorAll(".compartir-evento-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const eventoId = e.currentTarget.getAttribute("data-id");
+                const medio = e.currentTarget.getAttribute("data-medio");
+                await compartirEvento(eventoId, medio);
+            });
+        });
+        
 
     } catch (error) {
         console.error("Error al obtener eventos del usuario:", error);
