@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Eventos de la Comunidad</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .community-header {
+            background: linear-gradient(135deg, #4b6cb7 0%, #182848 100%);
+            color: white;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            border-radius: 8px;
+        }
+        
+        .community-filter {
+            background-color: white;
+            border-radius: 8px;
+            padding: 1.2rem;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            margin-bottom: 1.5rem;
+        }
+        
+        .community-card {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+            margin-bottom: 1.5rem;
+            border-left: 4px solid #4b6cb7;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+        
+        .community-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .community-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid white;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .community-meta {
+            font-size: 0.85rem;
+            color: #6c757d;
+        }
+        
+        .community-interactions {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        
+        .interaction-btn {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            color: #495057;
+            text-decoration: none;
+            font-size: 0.9rem;
+        }
+        
+        .interaction-btn:hover {
+            color: #4b6cb7;
+        }
+        
+        .community-tag {
+            display: inline-block;
+            background-color: #e9f0ff;
+            color: #4b6cb7;
+            padding: 0.25rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-right: 0.5rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- BARRA DE NAVEGACIÓN -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <img src="/admin/asset/img/Nuevos logos/Fusoft complete.png" alt="Logo Fusoft" class="brand-logo" />
+                <img src="/admin/asset/img/Official Uniempresarial bussines material/Logo uniempresarial rectangular CCB_Logo Completo Uniempresarial a color.png" alt="Logo Uniempresarial" class="brand-logo d-none d-md-block" />
+            </div>
+            <div class="d-flex align-items-center position-relative">
+                <div class="user-avatar" id="user-avatar">JP</div>
+                <span id="usuario-info" class="d-none d-lg-inline ms-2">Administrador</span>
+                
+                <!-- Panel de Usuario -->
+                <div class="user-panel" id="userPanel">
+                    <div class="user-panel-header">
+                        <div class="user-avatar mb-2" style="width: 60px; height: 60px; font-size: 1.5rem;">JP</div>
+                        <h6 class="mb-0">Juan Pérez</h6>
+                        <small class="text-muted">Administrador</small>
+                    </div>
+                    <div class="user-panel-body">
+                        <a href="#" class="user-panel-item">
+                            <i class="bi bi-person"></i> Mi Perfil
+                        </a>
+                        <a href="#" class="user-panel-item">
+                            <i class="bi bi-gear"></i> Configuración
+                        </a>
+                        <a href="/admin/pages/adm_evento.html" class="user-panel-item">
+                            <i class="bi bi-person-gear"></i> Panel Administrador
+                        </a>
+                    </div>
+                    <div class="user-panel-footer">
+                        <a href="#" class="btn btn-sm btn-outline-danger" id="btnLogout">
+                            <i class="bi bi-box-arrow-right"></i> Cerrar Sesión
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="container">
+        <div class="community-header text-center my-4">
+            <h1 class="mb-2"><i class="bi bi-people-fill"></i> Eventos de la Comunidad</h1>
+            <p class="mb-0">Descubre lo que está compartiendo la comunidad universitaria</p>
+        </div>
+        
+        <div class="community-filter">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label for="communitySearch" class="form-label">Buscar en la comunidad</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="communitySearch" placeholder="Buscar eventos...">
+                        <button class="btn btn-primary" type="button">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <label for="communityFilter" class="form-label">Filtrar por</label>
+                    <select class="form-select" id="communityFilter">
+                        <option selected>Todos los eventos</option>
+                        <option>Recientes</option>
+                        <option>Populares</option>
+                        <option>Mis contactos</option>
+                        <option>Por categoría</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Evento de la comunidad 1 -->
+        <div class="row">
+            ${data.map(evento => `
+                <div class="col-12 col-md-6 col-lg-4 mb-4">
+                    <div class="event-card h-100">
+                        <!-- Cabecera del creador -->
+                        <div class="creator-header d-flex align-items-center p-3 border-bottom bg-light">
+                            <img src="${evento.creadorAvatar || 'default-avatar.jpg'}" 
+                                 alt="Avatar" 
+                                 class="rounded-circle me-2" 
+                                 width="40" 
+                                 height="40">
+                            <div>
+                                <h6 class="mb-0">${evento.creadorNombre || 'Usuario'}</h6>
+                                <small class="text-muted">Publicado ${formatearFechaRelativa(evento.fechaPublicacion)}</small>
+                            </div>
+                        </div>
+                        
+                        <!-- Cuerpo del evento -->
+                        <div class="event-body card-body">
+                            <h3 class="event-title card-title">${evento.eveTitulo}</h3>
+                            <p class="event-description card-text">${evento.eveDescripcion || 'Descripción no disponible'}</p>
+                            
+                            <div class="event-details">
+                                <div class="detail-item">
+                                    <i class="bi bi-calendar"></i>
+                                    <span>${formatearFecha(evento.eveFechaInicio)} - ${formatearFecha(evento.eveFechaFin)}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="bi bi-geo-alt"></i>
+                                    <span>${evento.eveUbicacion || "Ubicación no disponible"}</span>
+                                </div>
+                                <div class="detail-item">
+                                    <i class="bi bi-bookmarks"></i>
+                                    <span>${evento.eveCategoria || "Categoria no disponible"}</span>
+                                </div>
+                            </div>
+                            
+                            <!-- Interacciones sociales -->
+                            <div class="social-interactions d-flex justify-content-between mt-3 mb-2">
+                                <button class="btn btn-sm btn-outline-danger like-btn">
+                                    <i class="bi bi-heart"></i> <span>${evento.likes || 0}</span>
+                                </button>
+                                <button class="btn btn-sm btn-outline-primary comentarios-btn">
+                                    <i class="bi bi-chat-left"></i> <span>${evento.comentarios || 0}</span>
+                                </button>
+                                <span class="text-muted views-count">
+                                    <i class="bi bi-eye"></i> ${evento.vistas || 0} vistas
+                                </span>
+                            </div>
+                            
+                            <!-- Acciones principales -->
+                            <div class="event-actions d-flex flex-wrap gap-2">
+                                ${evento.eveEnlace ? `
+                                <a href="${evento.eveEnlace}" class="btn btn-primary btn-sm">
+                                    <i class="bi bi-link-45deg"></i> Ver evento
+                                </a>
+                                ` : ''}
+                                
+                                <button class="btn btn-outline-success btn-sm guardar-btn">
+                                    <i class="bi bi-bookmark${eventosGuardadosIds.includes(evento.eveId) ? '-check-fill' : '-plus'}"></i>
+                                    ${eventosGuardadosIds.includes(evento.eveId) ? 'Guardado' : 'Guardar'}
+                                </button>
+                                
+                                <div class="dropdown">
+                                    <button class="btn btn-outline-info btn-sm dropdown-toggle" type="button" data-bs-toggle="dropdown">
+                                        <i class="bi bi-share-fill"></i> Compartir
+                                    </button>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-whatsapp"></i> WhatsApp</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-envelope"></i> Email</a></li>
+                                        <li><a class="dropdown-item" href="#"><i class="bi bi-facebook"></i> Facebook</a></li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+        
+        <!-- Paginación -->
+        <nav aria-label="Page navigation" class="mt-4">
+            <ul class="pagination justify-content-center">
+                <li class="page-item disabled">
+                    <a class="page-link" href="#" tabindex="-1" aria-disabled="true">Anterior</a>
+                </li>
+                <li class="page-item active"><a class="page-link" href="#">1</a></li>
+                <li class="page-item"><a class="page-link" href="#">2</a></li>
+                <li class="page-item"><a class="page-link" href="#">3</a></li>
+                <li class="page-item">
+                    <a class="page-link" href="#">Siguiente</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Script para el panel de usuario
+        document.getElementById('user-avatar').addEventListener('click', function() {
+            document.getElementById('userPanel').classList.toggle('active');
+        });
+        
+        // Cerrar el panel al hacer clic fuera de él
+        document.addEventListener('click', function(event) {
+            const userPanel = document.getElementById('userPanel');
+            const userAvatar = document.getElementById('user-avatar');
+            
+            if (!userPanel.contains(event.target) && event.target !== userAvatar) {
+                userPanel.classList.remove('active');
+            }
+        });
+    </script>
+</body>
+</html>

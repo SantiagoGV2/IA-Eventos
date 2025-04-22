@@ -13,24 +13,39 @@
 
 <body>
     <!-- BARRA DE NAVEGACIÓN REDISEÑADA -->
-    <nav class="navbar navbar-expand-lg navbar-light">
-        <div class="container-fluid navbar-container">
-            <div class="logo-container">
-                <img src="../asset/img/Nuevos logos/Fusoft complete.png" alt="Logo Fusoft" class="brand-logo">
-                <img src="../asset/img/Official Uniempresarial bussines material/Logo uniempresarial rectangular CCB_Logo Completo Uniempresarial a color.png" 
-                     alt="Logo Uniempresarial" class="brand-logo">
+    <nav class="navbar navbar-expand-lg">
+        <div class="container-fluid">
+            <div class="d-flex align-items-center">
+                <img src="/admin/asset/img/Nuevos logos/Fusoft complete.png" alt="Logo Fusoft" class="brand-logo" />
+                <img src="/admin/asset/img/Official Uniempresarial bussines material/Logo uniempresarial rectangular CCB_Logo Completo Uniempresarial a color.png" alt="Logo Uniempresarial" class="brand-logo d-none d-md-block" />
             </div>
-            
-            <div class="user-container">
-                <div class="user-nav">
-                    <div class="user-info">
-                        <div class="user-avatar" id="user-avatar">JP</div>
-                        <span class="d-none d-md-inline" id="usuario-info">Usuario</span>
+            <div class="d-flex align-items-center position-relative">
+                <div class="user-avatar" id="user-avatar">JP</div>
+                <span id="usuario-info" class="d-none d-lg-inline ms-2">Administrador</span>
+                
+                <!-- Panel de Usuario -->
+                <div class="user-panel" id="userPanel">
+                    <div class="user-panel-header">
+                        <div class="user-avatar mb-2" style="width: 60px; height: 60px; font-size: 1.5rem;">JP</div>
+                        <h6 class="mb-0">Juan Pérez</h6>
+                        <small class="text-muted">Administrador</small>
                     </div>
-                    <button class="logout-btn d-none" id="btnLogout">
-                        <i class="bi bi-box-arrow-right"></i>
-                        <span class="d-none d-md-inline">Cerrar sesión</span>
-                    </button>
+                    <div class="user-panel-body">
+                        <a href="#" class="user-panel-item">
+                            <i class="/admin/pages/adm_landinpages.html"></i> Mi Perfil
+                        </a>
+                        <a href="#" class="user-panel-item">
+                            <i class="bi bi-gear"></i> Configuración
+                        </a>
+                        <a href="/admin/pages/adm_landinpages.html" class="user-panel-item">
+                            <i class="bi bi-person-gear"></i> Panel Administrador
+                        </a>
+                    </div>
+                    <div class="user-panel-footer">
+                        <a href="#" class="btn btn-sm btn-outline-danger" id="btnLogout">
+                            <i class="/index.html"></i> Cerrar Sesión
+                        </a>
+                    </div>
                 </div>
             </div>
         </div>
@@ -48,18 +63,6 @@
                 <input type="text" class="form-control search-input" id="consulta" 
                        placeholder="Buscar eventos...">
             </div>
-            <!-- 
-            <div class="row g-2 mb-3">
-                <div class="col-md-6">
-                    <label for="startDate" class="form-label    ">Fecha inicio</label>
-                    <input type="date" class="form-control date-picker" id="startDate">
-                </div>
-                <div class="col-md-6">
-                    <label for="endDate" class="form-label">Fecha fin</label>
-                    <input type="date" class="form-control date-picker" id="endDate">
-                </div>
-            </div>
-            -->
             
             <div class="mb-3">
                 <label class="form-label" style="cursor: pointer;" id="toggleCategorias">
@@ -76,11 +79,19 @@
                 </div>
             </div>
             
-            <div class="d-flex gap-2">
+            <div class="action-buttons">
                 <button class="btn search-btn" id="btnBuscar">
                     <i class="bi bi-search"></i> Buscar
                 </button>
-                <button id="btnEventosUsuario" class="btn btn-outline-info">Mis eventos guardados</button>
+                <button id="btnEventosUsuario" class="btn">
+                    <a href="#"></a><i class="bi bi-bookmark-check"></i> Mis eventos
+                </button>
+                <button id="btnEventosComunidad" class="btn">
+                    <a href="../pages/evento_comunidad.html"><i class="bi bi-people"></i> Eventos comunidad</a>
+                </button>
+                <button id="btnHistorialEventos" class="btn">
+                    <a href="#"></a><i class="bi bi-clock-history"></i> Historial
+                </button>
             </div>
         </div>
         
@@ -101,6 +112,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/admin.js"></script>
     <script src="../js/main.js"></script>
+    
 </body>
 </html>
