@@ -49,7 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     alert(data.message || 'Registro exitoso');
                     formUsuario.reset();
                     // Redirigir al usuario después del registro exitoso
-                    window.location.href = '/index.html'; // Ajusta la URL según tu proyecto
+                    window.location.href = '/pages/login.html'; // Ajusta la URL según tu proyecto
                 } else {
                     console.error('Error:', data);
                     alert(data.message || 'Error al registrar usuario.');
