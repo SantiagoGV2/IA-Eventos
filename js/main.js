@@ -192,7 +192,7 @@ async function buscarEventos() {
                                         <i class="bi bi-link-45deg"></i> Ver evento
                                     </a>
                                     ` : ''}
-                                    ${!eventosGuardadosIds.includes(evento.eveId) ? `
+                                    ${!eventosGuardadosIds.some(e => e.id === evento.eveId) ? `
                                     <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveId}">
                                         <i class="bi bi-bookmark-plus"></i> Guardar
                                     </button>
@@ -322,12 +322,12 @@ async function guardarEvento(eventoId, button) {
         if (response.ok) {
             alert("Evento guardado exitosamente.");
             button.textContent = "Guardado";
-            eventosGuardadosIds.push(parseInt(eventoId));
+            eventosGuardadosIds.push({ id: parseInt(eventoId), titulo: 'Guardado desde interfaz' });
         } else if (response.status === 406) {
             alert("El evento ya está guardado.");
             button.textContent = "Ya guardado";
         } else {
-            alert("No se pudo guardar el evento.");
+            alert("No se pudo guardar el evento, ya esta guardado.");
             button.textContent = "Reintentar";
             button.disabled = false;
         }
@@ -416,10 +416,10 @@ async function obtenerEventosPorUsuario() {
                             </a>` : ''}
             
                             <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId || evento.eventoComuId}" data-medio="whatsapp">
-                                <i class="bi bi-share-fill"></i> Compartir por WhatsApp
+                                <i class="bi bi-whatsapp"></i> Compartir por WhatsApp
                             </button>
                             <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId || evento.eventoComuId}" data-medio="gmail">
-                                <i class="bi bi-share-fill"></i> Compartir por Gmail
+                                <i class="bi bi-envelope-fill"></i> Compartir por Gmail
                             </button>
                         </div>
                     </div>
@@ -524,7 +524,7 @@ async function HistorialPorUsuario() {
                                     </span>
                                 </div>
 
-                                ${!eventosGuardadosIds.includes(evento.eveId) ? `
+                                ${!eventosGuardadosIds.some(e => e.id === evento.eveId) ? `
                                     <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveId}">
                                         <i class="bi bi-bookmark-plus"></i> Guardar
                                     </button>
@@ -596,9 +596,10 @@ async function eliminarHistorial() {
         if (response.ok) {
             alert("Historial eliminado correctamente");
             obtenerEventosPorUsuario();
-            document.getElementById("resultsContainer").innerHTML = ""; // limpiar el contenedor
-            btn.classList.add("d-none");
-        } else {
+            document.getElementById("resultsContainer").innerHTML = "";
+            document.getElementById("btnBorrarHistorial").classList.add("d-none");
+        }
+         else {
             alert("Error al eliminar el historial");
         }
     } catch (error) {

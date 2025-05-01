@@ -160,13 +160,15 @@ async function guardarEvento(eventoId, button) {
     });
 
     if (response.ok) {
+      eventosGuardadosIds.push(parseInt(eventoId)); // <-- Agregar a la lista
       alert("Evento guardado exitosamente.");
       button.textContent = "Guardado";
-    } else if (response.status === 406) {
+    }
+     else if (response.status === 406) {
       alert("El evento ya está guardado.");
       button.textContent = "Ya guardado";
     } else {
-      alert("No se pudo guardar el evento.");
+      alert("No se pudo guardar el evento, ya esta guardado.");
       button.textContent = "Reintentar";
       button.disabled = false;
     }
@@ -176,6 +178,83 @@ async function guardarEvento(eventoId, button) {
     button.textContent = "Error";
     button.disabled = false;
   }
+}
+function construirTarjetaEvento(evento) {
+  const fechaInicio = new Date(evento.eveComuFechaInicio);
+  const fechaFin = new Date(evento.eveComuFechaFin);
+  const fechaPublicacion = new Date(evento.eveComuFechaCreacion || evento.eveComuFechaInicio);
+
+  const card = document.createElement('div');
+  card.className = 'col-12 col-md-6 col-lg-4 mb-4';
+  card.innerHTML = `
+    <div class="event-card h-100">
+      <div class="creator-header d-flex align-items-center p-3 border-bottom bg-light">
+        <div>
+          <h6 class="mb-0">${evento.creadorNombre || 'Usuario'}</h6>
+          <small class="text-muted">Publicado ${fechaPublicacion.toLocaleDateString('es-ES')}</small>
+        </div>
+      </div>
+
+      <div class="event-body card-body">
+        <h3 class="event-title card-title">${evento.eveComuTitulo}</h3>
+        <p class="event-description card-text">${evento.eveComuDescripcion || 'Descripción no disponible'}</p>
+
+        <div class="event-details">
+          <div class="detail-item"><i class="bi bi-calendar"></i> <span>${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}</span></div>
+          <div class="detail-item"><i class="bi bi-geo-alt"></i> <span>${evento.eveComuUbicacion || 'Ubicación no disponible'}</span></div>
+          <div class="detail-item"><i class="bi bi-bookmarks"></i> <span>${evento.eveComuCategoria || 'Categoría no disponible'}</span></div>
+        </div>
+
+        <div class="event-actions d-flex flex-wrap gap-2">
+          ${evento.eveComuEnlace ? `
+            <a href="${evento.eveComuEnlace}" class="btn btn-primary btn-sm" target="_blank">
+              <i class="bi bi-link-45deg"></i> Ver evento
+            </a>` : ''}
+          <div class="event-status mt-2">
+            <span class="badge ${evento.eveComuEstado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'}">
+              ${evento.eveComuEstado}
+            </span>
+          </div>
+
+          ${!eventosGuardadosIds.includes(evento.eveComuId) ? `
+            <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveComuId}">
+              <i class="bi bi-bookmark-plus"></i> Guardar
+            </button>
+          ` : `
+            <div class="mt-2 text-success">
+              <i class="bi bi-bookmark-check-fill"></i> Ya guardado
+            </div>
+          `}
+          <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveComuId}" data-medio="whatsapp">
+            <i class="bi bi-whatsapp"></i> Compartir por WhatsApp
+          </button>
+          <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveComuId}" data-medio="gmail">
+            <i class="bi bi-envelope-fill"></i> Compartir por Gmail
+          </button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Listeners
+  const guardarBtn = card.querySelector(".guardar-evento-btn");
+  if (guardarBtn) {
+    guardarBtn.addEventListener("click", async (e) => {
+      const eventoId = e.currentTarget.getAttribute("data-id");
+      await guardarEvento(eventoId, e.currentTarget);
+    });
+  }
+
+  const compartirBtns = card.querySelectorAll(".compartir-evento-btn");
+  compartirBtns.forEach(button => {
+    button.addEventListener("click", async (e) => {
+      const eventoId = e.currentTarget.getAttribute("data-id");
+      const medio = e.currentTarget.getAttribute("data-medio");
+      await compartirEvento(eventoId, medio);
+    });
+  });
+
+  return card;
 }
 
 const fetchEvento = async () => {
@@ -192,84 +271,10 @@ const fetchEvento = async () => {
       listaEventos.innerHTML = '';
 
       eventos.forEach(evento => {
-        const fechaInicio = new Date(evento.eveComuFechaInicio);
-        const fechaFin = new Date(evento.eveComuFechaFin);
-        const fechaPublicacion = new Date(evento.eveComuFechaCreacion || evento.eveComuFechaInicio);
-
-        const card = document.createElement('div');
-        card.className = 'col-12 col-md-6 col-lg-4 mb-4';
-        card.innerHTML = `
-              <div class="event-card h-100">
-                <!-- Cabecera del creador -->
-                <div class="creator-header d-flex align-items-center p-3 border-bottom bg-light">
-                  <div>
-                    <h6 class="mb-0">${evento.creadorNombre || 'Usuario'}</h6>
-                    <small class="text-muted">Publicado ${fechaPublicacion.toLocaleDateString('es-ES')}</small>
-                  </div>
-                </div>
-  
-                <!-- Cuerpo del evento -->
-                <div class="event-body card-body">
-                  <h3 class="event-title card-title">${evento.eveComuTitulo}</h3>
-                  <p class="event-description card-text">${evento.eveComuDescripcion || 'Descripción no disponible'}</p>
-  
-                  <div class="event-details">
-                    <div class="detail-item"><i class="bi bi-calendar"></i> <span>${fechaInicio.toLocaleDateString()} - ${fechaFin.toLocaleDateString()}</span></div>
-                    <div class="detail-item"><i class="bi bi-geo-alt"></i> <span>${evento.eveComuUbicacion || 'Ubicación no disponible'}</span></div>
-                    <div class="detail-item"><i class="bi bi-bookmarks"></i> <span>${evento.eveComuCategoria || 'Categoría no disponible'}</span></div>
-                  </div>
-  
-                  <div class="event-actions d-flex flex-wrap gap-2">
-                    ${evento.eveComuEnlace ? `
-                    <a href="${evento.eveComuEnlace}" class="btn btn-primary btn-sm" target="_blank">
-                      <i class="bi bi-link-45deg"></i> Ver evento
-                    </a>` : ''}
-                    <div class="event-status mt-2">
-                                    <span class="badge ${evento.eveComuEstado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'}">
-                                        ${evento.eveComuEstado}
-                                    </span>
-                    </div>
-  
-                     ${!eventosGuardadosIds.includes(evento.eveComuId) ? `
-                                    <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveComuId}">
-                                        <i class="bi bi-bookmark-plus"></i> Guardar
-                                    </button>
-                                    ` : `
-                                    <div class="mt-2 text-success">
-                                        <i class="bi bi-bookmark-check-fill"></i> Ya guardado
-                                    </div>
-                                    `}
-                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveComuId}" data-medio="whatsapp">
-                                        <i class="bi bi-share-fill"></i> Compartir por WhatsApp
-                                    </button>
-                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveComuId}" data-medio="gmail">
-                                        <i class="bi bi-share-fill"></i> Compartir por Gmail
-                                    </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            `;
-        // Añadir listeners solo para los botones de esta tarjeta
-        const guardarBtn = card.querySelector(".guardar-evento-btn");
-        if (guardarBtn) {
-          guardarBtn.addEventListener("click", async (e) => {
-            const eventoId = e.currentTarget.getAttribute("data-id");
-            await guardarEvento(eventoId, e.currentTarget);
-          });
-        }
-
-        const compartirBtns = card.querySelectorAll(".compartir-evento-btn");
-        compartirBtns.forEach(button => {
-          button.addEventListener("click", async (e) => {
-            const eventoId = e.currentTarget.getAttribute("data-id");
-            const medio = e.currentTarget.getAttribute("data-medio");
-            await compartirEvento(eventoId, medio);
-          });
-        });
-
+        const card = construirTarjetaEvento(evento);
         listaEventos.appendChild(card);
       });
+
     } else {
       console.error('Error al obtener los eventos:', response.status);
     }
@@ -278,5 +283,56 @@ const fetchEvento = async () => {
   }
 };
 
+document.getElementById("form-filtros").addEventListener("submit", async function (e) {
+  e.preventDefault();
+  await filtrarEventos();
+});
+
+async function filtrarEventos() {
+  const titulo = document.getElementById("titulo").value.trim();
+  const categoria = document.getElementById("categoria").value;
+  const estado = document.getElementById("estado").value;
+  const ubicacion = document.getElementById("ubicacion").value.trim();
+
+  const params = new URLSearchParams();
+  if (titulo) params.append("titulo", titulo);
+  if (categoria) params.append("categoria", categoria);
+  if (estado) params.append("estado", estado);
+  if (ubicacion) params.append("ubicacion", ubicacion);
+
+  try {
+    const response = await fetch(`http://localhost:8080/project-AI/eventoComuFiltro?${params.toString()}`, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error("Error al filtrar eventos");
+    }
+
+    const eventos = await response.json();
+    renderizarEventos(eventos);
+  } catch (error) {
+    console.error("Error al filtrar eventos:", error);
+    alert("No se pudieron obtener los eventos filtrados.");
+  }
+}
+
+function renderizarEventos(eventos) {
+  const listaEventos = document.getElementById('listaEventos');
+  listaEventos.innerHTML = '';
+  eventos.forEach(evento => {
+    const card = construirTarjetaEvento(evento);
+    listaEventos.appendChild(card);
+  });
+}
+
+
+
+document.addEventListener("DOMContentLoaded", () => {
+  filtrarEventos(); // Carga todos los eventos sin filtros
+});
 
 
