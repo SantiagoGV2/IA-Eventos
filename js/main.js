@@ -387,6 +387,7 @@ async function obtenerEventosPorUsuario() {
                 const fechaFin = esEventoIA ? evento.eventoFechaFin : evento.eventoComuFechaFin;
                 const categoria = esEventoIA ? evento.eventoCategoria : evento.eventoCategoria;
                 const enlace = esEventoIA ? evento.eventoEnlace : evento.eventoComuEnlace;
+                const estado = esEventoIA ? evento.eventoEstado : evento.eventoComuEstado;
             
                 return `
                 <div class="col-12 col-md-6 col-lg-4 mb-4">
@@ -414,6 +415,11 @@ async function obtenerEventosPorUsuario() {
                             <a href="${enlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
                                 <i class="bi bi-link-45deg"></i> Ver evento
                             </a>` : ''}
+                             <div class="event-status mb-2">
+                                <span class="badge ${estado === 'activo' ? 'bg-success' : 'bg-secondary'}">
+                                    ${estado}
+                                </span>
+                                </div>
             
                             <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId || evento.eventoComuId}" data-medio="whatsapp">
                                 <i class="bi bi-whatsapp"></i> Compartir por WhatsApp
