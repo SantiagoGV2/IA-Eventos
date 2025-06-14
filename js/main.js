@@ -23,6 +23,17 @@ document.addEventListener('click', function(e) {
         userPanel.classList.remove('active');
     }
 });
+function getAuthHeaders() {
+    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
+    if (!token) {
+        console.error("No hay token para la petición.");
+        return null;
+    }
+    return {
+        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
+        "Content-Type": "application/json"
+    };
+}
 
 function obtenerIniciales(nombreCompleto) {
     if (!nombreCompleto) return "??";
@@ -36,18 +47,15 @@ function obtenerIniciales(nombreCompleto) {
 let usuarioGlobal = null;
 
 async function obtenerUsuario() {
+    const headers = getAuthHeaders();
+    if (!headers) {
+        cerrarSesion(); // Si no hay token, no podemos continuar.
+        return;
+    }
     try {
-        const token = localStorage.getItem("jwtToken");
-        if (!token || !token.startsWith("Bearer ")) {
-            throw new Error("No hay token disponible o es inválido");
-        }
-
         const response = await fetch("http://localhost:8080/project-AI/usuarios/auth", {
-            method: "GET",
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json"
-            }
+           method: "GET",
+            headers: headers
         });
 
         if (!response.ok) {
@@ -76,27 +84,36 @@ async function obtenerUsuario() {
 }
 
 async function obtenerEventosGuardadosIds() {
-    try {
-        const token = localStorage.getItem("jwtToken");
-        if (!token || !token.startsWith("Bearer ")) return;
+   const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
 
+    try {
         const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoUsuario`, {
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json"
-            }
+            method: "GET",
+            headers: headers
         });
 
-        if (!response.ok) throw new Error("No se pudieron obtener los eventos guardados");
+        if (!response.ok) {
+            console.error("No se pudieron obtener los IDs de eventos guardados.");
+            eventosGuardadosIds = [];
+            return;
+        }
 
-        const eventos = await response.json();
-        console.log("Eventos recibidos:", eventos);
-        eventosGuardadosIds = eventos.map(e => ({
-            id: e.eveId,
-            titulo: e.eveTitulo
-        }));
+        const eventosGuardados = await response.json();
+        
+        // **LA CLAVE ESTÁ AQUÍ**
+        // Transformamos la respuesta completa en una lista simple de IDs.
+        // Asumo que el objeto evento guardado tiene una estructura como { evento: { eveId: 123 } }
+        // Ajusta 'evento.evento.eveId' según la estructura JSON que te devuelve tu API.
+        eventosGuardadosIds = eventosGuardados
+    .map(eg => eg.eventoId) 
+    .filter(id => id != null);
+
+console.log("IDs de eventos guardados cargados (CORREGIDO):", eventosGuardadosIds);
+
     } catch (error) {
-        console.error("Error al obtener IDs de eventos guardados:", error);
+        console.error("Error en obtenerEventosGuardadosIds:", error);
+        eventosGuardadosIds = []; // En caso de error, reseteamos la lista.
     }
 }
 
@@ -105,13 +122,132 @@ function cerrarSesion() {
     localStorage.removeItem('jwtToken');
     window.location.href = '/pages/login.html';
 }
+function crearTarjetaEventoHTML(evento, vista = 'busqueda') {
+    // 1. NORMALIZAR EL OBJETO EVENTO
+    // Para manejar tanto eventos de la IA como los guardados que podrían tener nombres diferentes.
+    // Usamos el estado del backend como la fuente de verdad.
+    const esActivo = (evento.eveEstado || evento.eventoEstado || evento.eventoComuEstado || '').toLowerCase() === 'activo';
+    const titulo = evento.eveTitulo || evento.eventoTitulo || evento.eventoComuTitulo || 'Título no disponible';
+    const descripcion = evento.eveDescripcion || evento.eventoDescripcion || evento.eventoComuDescripcion || 'Descripción no disponible';
+    const enlace = evento.eveEnlace || evento.eventoEnlace || evento.eventoComuEnlace;
+    const fechaInicio = evento.eveFechaInicio || evento.eventoFechaInicio || evento.eventoComuFechaInicio;
+    const fechaFin = evento.eveFechaFin || evento.eventoFechaFin || evento.eventoComuFechaFin;
+    const ubicacion = evento.eveUbicacion || evento.eventoUbicacion || evento.eventoComuUbicacion;
+    const categoria = evento.eveCategoria || evento.eventoCategoria || 'General'; // Asumimos General si no viene
+    const id = evento.eveId || evento.evento?.eveId || evento.eventoComuId;
+    const eveGuaId = evento.eveGuaId;
+
+    // 2. LÓGICA INTELIGENTE PARA LOS BOTONES
+    const botonEnlaceHTML = esActivo
+        ? `<a href="${enlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
+               <i class="bi bi-link-45deg"></i> Ver evento
+           </a>`
+        : `<button class="btn btn-secondary mt-2" disabled title="El evento ya pasó o el enlace no está disponible">
+               <i class="bi bi-slash-circle"></i> No disponible
+           </button>`;
+
+    // NOTA: La lógica para el botón "Guardar" podría variar dependiendo de la vista.
+    // Por ahora, la incluimos aquí, pero se podría pasar como un parámetro si se vuelve más compleja.
+    let botonGuardadoHTML = '';
+
+    if (vista === 'guardados') {
+        // En la vista de "Mis Eventos", creamos el botón "Quitar".
+        // Añadimos 'data-guardado-id' para el DELETE y 'data-evento-id' para actualizar nuestro array local.
+        botonGuardadoHTML = `
+            <button class="btn btn-danger mt-2 quitar-evento-btn" 
+                    data-guardado-id="${eveGuaId}" 
+                    data-evento-id="${id}">
+                <i class="bi bi-bookmark-x-fill"></i> Quitar
+            </button>`;
+    } else {
+        // En "Búsqueda" o "Historial", comprobamos si el ID está en nuestra lista
+        const estaGuardado = eventosGuardadosIds.includes(id);
+
+        if (estaGuardado) {
+            botonGuardadoHTML = `
+                <div class="mt-2 text-success">
+                    <i class="bi bi-bookmark-check-fill"></i> Guardado
+                </div>`;
+        } else {
+            botonGuardadoHTML = `
+                <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${id}">
+                    <i class="bi bi-bookmark-plus"></i> Guardar
+                </button>`;
+        }
+    }
+    
+    // 3. CONSTRUIR Y DEVOLVER LA PLANTILLA HTML COMPLETA
+    return `
+        <div class="col-12 col-md-6 col-lg-4 mb-4">
+            <div class="event-card h-100">
+                <div class="event-body card-body d-flex flex-column">
+                    <h3 class="event-title card-title">${titulo}</h3>
+                    <p class="event-description card-text">${descripcion}</p>
+                    
+                    <div class="event-details mt-auto">
+                        <div class="detail-item"><i class="bi bi-calendar"></i><span>${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}</span></div>
+                        <div class="detail-item"><i class="bi bi-geo-alt"></i><span>${ubicacion}</span></div>
+                        <div class="detail-item"><i class="bi bi-bookmarks"></i><span>${categoria}</span></div>
+                    </div>
+                    
+                    <div class="event-actions mt-3">
+                        ${botonEnlaceHTML}
+                        ${botonGuardadoHTML}
+                        <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${id}" data-medio="whatsapp"><i class="bi bi-whatsapp"></i></button>
+                        <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${id}" data-medio="gmail"><i class="bi bi-envelope-fill"></i></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+async function quitarEventoGuardado(eveGuaId, eventoId, button) {
+    if (!confirm("¿Estás seguro de que deseas quitar este evento de tus guardados?")) {
+        return; // El usuario canceló la acción
+    }
+
+    const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
+
+    // Deshabilitar el botón para evitar clics repetidos
+    button.disabled = true;
+    button.innerHTML = '<i class="bi bi-hourglass-split"></i> Quitando...';
+
+    try {
+        const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoE/${eveGuaId}`, {
+            method: "DELETE",
+            headers: headers
+        });
+
+        if (response.ok) {
+            // 1. Quitar la tarjeta del evento de la vista
+            button.closest('.col-12').remove();
+
+            // 2. Actualizar nuestro estado local (el array de IDs) para consistencia
+            eventosGuardadosIds = eventosGuardadosIds.filter(id => id !== eventoId);
+            
+            alert("Evento quitado exitosamente.");
+        } else {
+            throw new Error('No se pudo quitar el evento.');
+        }
+
+    } catch (error) {
+        console.error("Error al quitar evento:", error);
+        alert(error.message);
+        // Volver a habilitar el botón si falla
+        button.disabled = false;
+        button.innerHTML = '<i class="bi bi-bookmark-x-fill"></i> Quitar';
+    }
+}
 
 async function buscarEventos() {
+    // 1. OBTENER ELEMENTOS DEL DOM Y VALIDAR ENTRADAS
     const consulta = document.getElementById("consulta").value.trim();
     const resultsContainer = document.getElementById("resultsContainer");
     const loading = document.getElementById("loading");
     const errorMessage = document.getElementById("error-message");
 
+    // Reiniciar la interfaz de usuario para una nueva búsqueda
     resultsContainer.innerHTML = "";
     errorMessage.classList.add("d-none");
     loading.classList.remove("d-none");
@@ -123,133 +259,76 @@ async function buscarEventos() {
         return;
     }
 
-    let token = localStorage.getItem("jwtToken");
-    if (!token) {
-        errorMessage.textContent = "No tienes sesión iniciada.";
-        errorMessage.classList.remove("d-none");
-        loading.classList.add("d-none");
+    const headers = getAuthHeaders();
+    if (!headers) {
+        alert("Necesitas iniciar sesión para buscar.");
         return;
     }
 
-    if (!token.startsWith("Bearer ")) {
-        token = `Bearer ${token}`;
-    }
-
+    // 2. REALIZAR LA PETICIÓN (FETCH) AL BACKEND
     try {
         const response = await fetch("http://localhost:8080/project-AI/buscar", {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            },
-            body: JSON.stringify({
-                consulta,
-                usuId: usuarioGlobal ? usuarioGlobal.usuId : null
-            })
+           method: "POST",
+            headers: headers,
+            body: JSON.stringify({ consulta })
         });
 
         const data = await response.json();
 
+        // Manejo de errores de la respuesta (ej. 400, 500)
         if (!response.ok) {
-            throw new Error(data.error || "Error al obtener eventos");
+            throw new Error(data.error || "Ocurrió un error al buscar. Intenta de nuevo.");
+        }
+        
+        // Ocultar el spinner de carga
+        loading.classList.add("d-none");
+
+        // 3. RENDERIZAR LOS RESULTADOS O UN MENSAJE DE "NO ENCONTRADO"
+        if (!Array.isArray(data) || data.length === 0) {
+            errorMessage.textContent = "No se encontraron eventos para esta búsqueda.";
+            errorMessage.classList.remove("d-none");
+            return;
         }
 
-        setTimeout(() => {
-            loading.classList.add("d-none");
+        resultsContainer.innerHTML = `
+    <div class="row">
+        ${data.map(evento => crearTarjetaEventoHTML(evento, 'busqueda')).join('')}
+    </div>
+`;
 
-            if (!Array.isArray(data) || data.length === 0) {
-                errorMessage.textContent = "No se encontraron eventos.";
-                errorMessage.classList.remove("d-none");
-                return;
-            }
+        // 4. AÑADIR "EVENT LISTENERS" A LOS BOTONES NUEVOS
+        document.querySelectorAll(".guardar-evento-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const eventoId = e.currentTarget.getAttribute("data-id");
+                await guardarEvento(eventoId, e.currentTarget);
+            });
+        });
 
-            resultsContainer.innerHTML = `
-                <div class="row">
-                    ${data.map(evento => `
-                        <div class="col-12 col-md-6 col-lg-4 mb-4">
-                            <div class="event-card h-100">
-                                <div class="event-body card-body">
-                                    <h3 class="event-title card-title">${evento.eveTitulo}</h3>
-                                    <p class="event-description card-text">${evento.eveDescripcion || 'Descripción no disponible'}</p>
-                                    
-                                    <div class="event-details">
-                                        <div class="detail-item">
-                                            <i class="bi bi-calendar"></i>
-                                            <span>${formatearFecha(evento.eveFechaInicio)} - ${formatearFecha(evento.eveFechaFin)}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <i class="bi bi-geo-alt"></i>
-                                            <span>${evento.eveUbicacion || "Ubicación no disponible"}</span>
-                                        </div>
-                                        <div class="detail-item">
-                                            <i class="bi bi-bookmarks"></i>
-                                            <span>${evento.eveCategoria || "Categoria no disponible"}</span>
-                                        </div>
-                                    </div>
-                                    
-                                    ${evento.eveEnlace ? `
-                                    <a href="${evento.eveEnlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
-                                        <i class="bi bi-link-45deg"></i> Ver evento
-                                    </a>
-                                    ` : ''}
-                                    ${!eventosGuardadosIds.some(e => e.id === evento.eveId) ? `
-                                    <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveId}">
-                                        <i class="bi bi-bookmark-plus"></i> Guardar
-                                    </button>
-                                    ` : `
-                                    <div class="mt-2 text-success">
-                                        <i class="bi bi-bookmark-check-fill"></i> Ya guardado
-                                    </div>
-                                    `}
-                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="whatsapp">
-                                        <i class="bi bi-share-fill"></i> Compartir por WhatsApp
-                                    </button>
-                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="gmail">
-                                        <i class="bi bi-share-fill"></i> Compartir por Gmail
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-            document.querySelectorAll(".guardar-evento-btn").forEach(button => {
-                button.addEventListener("click", async (e) => {
-                    const eventoId = e.currentTarget.getAttribute("data-id");
-                    await guardarEvento(eventoId, e.currentTarget); // <- se pasa el botón
-                });
-            });        
-            document.querySelectorAll(".compartir-evento-btn").forEach(button => {
-                button.addEventListener("click", async (e) => {
-                    const eventoId = e.currentTarget.getAttribute("data-id");
-                    const medio = e.currentTarget.getAttribute("data-medio");
-                    await compartirEvento(eventoId, medio);
-                });
-            });                                       
-        }, 500);
+        document.querySelectorAll(".compartir-evento-btn").forEach(button => {
+            button.addEventListener("click", async (e) => {
+                const eventoId = e.currentTarget.getAttribute("data-id");
+                const medio = e.currentTarget.getAttribute("data-medio");
+                await compartirEvento(eventoId, medio);
+            });
+        });
+
+    // 5. MANEJO DE ERRORES GENERALES (ej. problemas de red)
     } catch (error) {
-        console.error("Error al obtener eventos:", error);
+        console.error("Error en buscarEventos:", error);
+        loading.classList.add("d-none");
         errorMessage.textContent = error.message;
         errorMessage.classList.remove("d-none");
-        loading.classList.add("d-none");
     }
-    
 }
 
 async function compartirEvento(eventoId, medio) {
-    const token = localStorage.getItem("jwtToken");
-    if (!token || !token.startsWith("Bearer ")) {
-        alert("Usuario no autenticado");
-        return;
-    }
+    const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
 
     try {
         const response = await fetch("http://localhost:8080/project-AI/compartir", {
             method: "POST",
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json"
-            },
+            headers: headers,
             body: JSON.stringify({
                 evento: {
                     eveId: parseInt(eventoId)
@@ -295,11 +374,8 @@ async function compartirEvento(eventoId, medio) {
 
 
 async function guardarEvento(eventoId, button) {
-    const token = localStorage.getItem("jwtToken");
-    if (!token || !token.startsWith("Bearer ")) {
-        alert("Usuario no autenticado");
-        return;
-    }
+     const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
 
     // Desactiva el botón para evitar múltiples clics
     button.disabled = true;
@@ -312,17 +388,23 @@ async function guardarEvento(eventoId, button) {
     try {
         const response = await fetch("http://localhost:8080/project-AI/eventoGuardadoAG", {
             method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-                "Authorization": token
-            },
+            headers: headers,
             body: JSON.stringify(body)
         });
 
         if (response.ok) {
             alert("Evento guardado exitosamente.");
-            button.textContent = "Guardado";
-            eventosGuardadosIds.push({ id: parseInt(eventoId), titulo: 'Guardado desde interfaz' });
+             // 1. Actualizar el estado local
+        const idNumerico = parseInt(eventoId);
+        if (!eventosGuardadosIds.includes(idNumerico)) {
+            eventosGuardadosIds.push(idNumerico);
+        }
+
+        // 2. Actualizar la UI del botón específico
+        button.outerHTML = `
+            <div class="mt-2 text-success">
+                <i class="bi bi-bookmark-check-fill"></i> Guardado
+            </div>`;
         } else if (response.status === 406) {
             alert("El evento ya está guardado.");
             button.textContent = "Ya guardado";
@@ -349,18 +431,13 @@ async function obtenerEventosPorUsuario() {
     errorMessage.classList.add("d-none");
     loading.classList.remove("d-none");
 
+     const headers = getAuthHeaders();
+    if (!headers) return; 
     try {
-        const token = localStorage.getItem("jwtToken");
-        if (!token || !token.startsWith("Bearer ")) {
-            throw new Error("No hay token disponible o es inválido");
-        }
-
+       
         const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoUsuario`, {
-            method: "GET",
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json"
-            }
+             method: "GET",
+             headers: headers
         });
 
         if (!response.ok) {
@@ -376,64 +453,21 @@ async function obtenerEventosPorUsuario() {
             return;
         }
 
+        // ¡MIRA QUÉ LIMPIO QUEDA AHORA!
         resultsContainer.innerHTML = `
             <div class="row">
-            ${eventos.map(evento => {
-                const esEventoIA = evento.eventoTitulo !== null; // Si tiene titulo general
-                const titulo = esEventoIA ? evento.eventoTitulo : evento.eventoComuTitulo;
-                const descripcion = esEventoIA ? evento.eventoDescripcion : evento.eventoComuDescripcion;
-                const ubicacion = esEventoIA ? evento.eventoUbicacion : evento.eventoComuUbicacion;
-                const fechaInicio = esEventoIA ? evento.eventoFechaInicio : evento.eventoComuFechaInicio;
-                const fechaFin = esEventoIA ? evento.eventoFechaFin : evento.eventoComuFechaFin;
-                const categoria = esEventoIA ? evento.eventoCategoria : evento.eventoCategoria;
-                const enlace = esEventoIA ? evento.eventoEnlace : evento.eventoComuEnlace;
-                const estado = esEventoIA ? evento.eventoEstado : evento.eventoComuEstado;
-            
-                return `
-                <div class="col-12 col-md-6 col-lg-4 mb-4">
-                    <div class="event-card h-100">  
-                        <div class="event-body card-body">
-                            <h3 class="event-title card-title">${titulo}</h3>
-                            <p class="event-description card-text">${descripcion || 'Descripción no disponible'}</p>
-                            
-                            <div class="event-details">
-                                <div class="detail-item">
-                                    <i class="bi bi-calendar"></i>
-                                    <span>${formatearFecha(fechaInicio)} - ${formatearFecha(fechaFin)}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="bi bi-geo-alt"></i>
-                                    <span>${ubicacion || "Ubicación no disponible"}</span>
-                                </div>
-                                <div class="detail-item">
-                                    <i class="bi bi-bookmarks"></i>
-                                    <span>${categoria || "Categoría no disponible"}</span>
-                                </div>
-                            </div>
-                            
-                            ${enlace ? `
-                            <a href="${enlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
-                                <i class="bi bi-link-45deg"></i> Ver evento
-                            </a>` : ''}
-                             <div class="event-status mb-2">
-                                <span class="badge ${estado === 'activo' ? 'bg-success' : 'bg-secondary'}">
-                                    ${estado}
-                                </span>
-                                </div>
-            
-                            <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId || evento.eventoComuId}" data-medio="whatsapp">
-                                <i class="bi bi-whatsapp"></i> Compartir por WhatsApp
-                            </button>
-                            <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId || evento.eventoComuId}" data-medio="gmail">
-                                <i class="bi bi-envelope-fill"></i> Compartir por Gmail
-                            </button>
-                        </div>
-                    </div>
-                </div>
-                `;
-            }).join('')}            
+                ${eventos.map(evento => crearTarjetaEventoHTML(evento, 'guardados')).join('')}
             </div>
         `;
+         document.querySelectorAll(".quitar-evento-btn").forEach(button => {
+            button.addEventListener("click", (e) => {
+                const botonPresionado = e.currentTarget;
+                const eveGuaId = botonPresionado.dataset.guardadoId; // 'data-guardado-id'
+                const eventoId = parseInt(botonPresionado.dataset.eventoId); // 'data-evento-id'
+                
+                quitarEventoGuardado(eveGuaId, eventoId, botonPresionado);
+            });
+        });
         // Asigna funcionalidad a los botones de compartir
         document.querySelectorAll(".compartir-evento-btn").forEach(button => {
             button.addEventListener("click", async (e) => {
@@ -463,18 +497,17 @@ async function HistorialPorUsuario() {
     errorMessage.classList.add("d-none");
     loading.classList.remove("d-none");
 
+    const headers = getAuthHeaders();
+    if (!headers) {
+        // Manejar el caso de que no haya sesión
+        alert("Necesitas iniciar sesión para ver tu historial.");
+        cerrarSesion();
+        return; 
+    }
     try {
-        const token = localStorage.getItem("jwtToken");
-        if (!token || !token.startsWith("Bearer ")) {
-            throw new Error("No hay token disponible o es inválido");
-        }
-
         const response = await fetch("http://localhost:8080/project-AI/eventosU", {
             method: "GET",
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json"
-            }
+            headers: headers
         });
 
         if (!response.ok) {
@@ -496,59 +529,7 @@ async function HistorialPorUsuario() {
 
         resultsContainer.innerHTML = `
             <div class="row">
-                ${eventos.map(evento => `
-                    <div class="col-12 col-md-6 col-lg-4 mb-4">
-                        <div class="event-card h-100">  
-                            <div class="event-body card-body">
-                                <h3 class="event-title card-title">${evento.eveTitulo}</h3>
-                                <p class="event-description card-text">${evento.eveDescripcion || 'Descripción no disponible'}</p>
-                                
-                                <div class="event-details">
-                                    <div class="detail-item">
-                                        <i class="bi bi-calendar"></i>
-                                        <span>${formatearFecha(evento.eveFechaInicio)} - ${formatearFecha(evento.eveFechaFin)}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="bi bi-geo-alt"></i>
-                                        <span>${evento.eveUbicacion || "Ubicación no disponible"}</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <i class="bi bi-bookmarks"></i>
-                                        <span>${evento.eveCategoria || "Categoria no disponible"}</span>
-                                    </div>
-                                </div>
-                                
-                                ${evento.eveEnlace ? `
-                                <a href="${evento.eveEnlace}" target="_blank" rel="noopener noreferrer" class="event-link btn btn-primary mt-2">
-                                    <i class="bi bi-link-45deg"></i> Ver evento
-                                </a>
-                                ` : ''}
-                                
-                                <div class="event-status mt-2">
-                                    <span class="badge ${evento.eveEstado === 'ACTIVO' ? 'bg-success' : 'bg-secondary'}">
-                                        ${evento.eveEstado}
-                                    </span>
-                                </div>
-
-                                ${!eventosGuardadosIds.some(e => e.id === evento.eveId) ? `
-                                    <button class="btn btn-success mt-2 guardar-evento-btn" data-id="${evento.eveId}">
-                                        <i class="bi bi-bookmark-plus"></i> Guardar
-                                    </button>
-                                    ` : `
-                                    <div class="mt-2 text-success">
-                                        <i class="bi bi-bookmark-check-fill"></i> Ya guardado
-                                    </div>
-                                    `}
-                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="whatsapp">
-                                        <i class="bi bi-share-fill"></i> Compartir por WhatsApp
-                                    </button>
-                                    <button class="btn btn-info mt-2 compartir-evento-btn" data-id="${evento.eveId}" data-medio="gmail">
-                                        <i class="bi bi-share-fill"></i> Compartir por Gmail
-                                    </button>
-                            </div>
-                        </div>
-                    </div>
-                `).join('')}
+                ${eventos.map(evento => crearTarjetaEventoHTML(evento, 'historial')).join('')}
             </div>
         `;
         document.querySelectorAll(".guardar-evento-btn").forEach(button => {
@@ -585,32 +566,50 @@ function formatearFecha(fecha) {
 }
 
 async function eliminarHistorial() {
-    try {
-        const token = localStorage.getItem("jwtToken");
-        if (!token || !token.startsWith("Bearer ")) {
-            throw new Error("No hay token disponible o es inválido");
-        }
+    if (!confirm("¿Estás seguro de que deseas borrar tu historial de búsqueda? Esta acción no se puede deshacer.")) {
+        return;
+    }
+    const headers = getAuthHeaders();
+    if (!headers) {
+        alert("Necesitas iniciar sesión.");
+        return;
+    }
 
+    try {
         const response = await fetch("http://localhost:8080/project-AI/historial", {
             method: "DELETE",
-            headers: {
-                "Authorization": token,
-                "Content-Type": "application/json"
-            }
+            headers: headers
         });
 
-        if (response.ok) {
-            alert("Historial eliminado correctamente");
-            obtenerEventosPorUsuario();
-            document.getElementById("resultsContainer").innerHTML = "";
-            document.getElementById("btnBorrarHistorial").classList.add("d-none");
+        // ==================================================================
+        // AQUÍ ESTÁ LA NUEVA LÓGICA
+        // ==================================================================
+        // Primero, verificamos si la sesión expiró (error 401).
+        if (response.status === 401) {
+            alert("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+            cerrarSesion(); // Llamamos a tu función de logout para limpiar y redirigir.
+            return; // Detenemos la ejecución de la función aquí.
         }
-         else {
-            alert("Error al eliminar el historial");
+
+        // Si la respuesta no fue 401, pero tampoco fue exitosa, manejamos otros errores.
+        if (!response.ok) {
+            // Intenta obtener un mensaje de error del backend, si no, usa uno genérico.
+            const errorData = await response.json().catch(() => ({})); 
+            throw new Error(errorData.message || "Error al eliminar el historial.");
         }
+
+        // Si todo fue exitoso (response.ok es true)
+        alert("Historial eliminado correctamente");
+        await HistorialPorUsuario(); // Recargamos la vista del historial (que ahora estará vacía).
+        
     } catch (error) {
         console.error("Error al eliminar historial:", error);
-        alert("Hubo un error al borrar el historial.");
+        // Evitamos mostrar la alerta si ya lo hicimos por el error 401
+        if (error.message.includes("expirado")) {
+            // No hacemos nada, ya se manejó.
+        } else {
+            alert(error.message || "Hubo un error de red al borrar el historial.");
+        }
     }
 }
 

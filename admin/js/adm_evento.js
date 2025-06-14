@@ -1,12 +1,25 @@
+function getAuthHeaders() {
+    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
+    if (!token) {
+        console.error("No hay token para la petición.");
+        return null;
+    }
+    return {
+        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
+        "Content-Type": "application/json"
+    };
+}
 document.addEventListener('DOMContentLoaded', async () => {
   // Función para obtener y mostrar los datos de la base de datos
+  const headers = getAuthHeaders();
+    if (!headers) return;
+
   const fetchEvento = async () => {
     try {
       // Realizamos una petición GET a la API que devuelve todos los eventos
       const response = await fetch('http://localhost:8080/project-AI/eventoComu', {
-        headers: {
-          'Authorization': localStorage.getItem('jwtToken')
-        }
+        method: "GET",
+        headers: headers
       });
       if (response.ok) {
         const eventos = await response.json();
@@ -114,8 +127,13 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Función para cargar datos en el modal de edición
   const cargarDatosParaEditar = async (id) => {
+    const headers = getAuthHeaders();
+    if (!headers) return;
     try {
-      const response = await fetch(`http://localhost:8080/project-AI/eventoComu/${id}`);
+      const response = await fetch(`http://localhost:8080/project-AI/eventoComu/${id}`,{
+          method: "GET",
+          headers: headers
+      });
       if (response.ok) {
         const evento = await response.json();
 
@@ -158,12 +176,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     
     // Agregar nuevo evento
     newBtn.addEventListener('click', async () => {
+      const headers = getAuthHeaders();
+      if (!headers) return;
       try {
         const response = await fetch(`http://localhost:8080/project-AI/eventoComuE/${id}`, {
-          method: 'DELETE',
-          headers: {
-            'Authorization': localStorage.getItem('jwtToken')
-          }
+          method: "DELETE",
+          headers: headers
         });
   
         if (response.ok) {
@@ -197,14 +215,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const ubicacion = document.getElementById('editarUbicacion').value;
     const enlace = document.getElementById('editarEnlace').value;
     const estado = document.getElementById('editarEstado').value;
-    
+    const headers = getAuthHeaders();
+      if (!headers) return;
     try {
       const response = await fetch(`http://localhost:8080/project-AI/eventoComuA`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': localStorage.getItem('jwtToken')
-        },
+        method: "POST",
+        headers: headers,
         body: JSON.stringify({
           eveComuId: id,
           eveComuTitulo: titulo,

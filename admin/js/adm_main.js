@@ -14,19 +14,27 @@ function obtenerIniciales(nombreCompleto) {
 
 let usuarioGlobal = null;
 
-async function obtenerUsuario() {
-  try {
-    const token = localStorage.getItem("jwtToken");
-    if (!token || !token.startsWith("Bearer ")) {
-      throw new Error("No hay token disponible o es inválido");
+function getAuthHeaders() {
+    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
+    if (!token) {
+        console.error("No hay token para la petición.");
+        return null;
     }
-
+    return {
+        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
+        "Content-Type": "application/json"
+    };
+}
+async function obtenerUsuario() {
+  const headers = getAuthHeaders();
+    if (!headers) {
+        cerrarSesion(); // Si no hay token, no podemos continuar.
+        return;
+    }
+  try {
     const response = await fetch("http://localhost:8080/project-AI/admin/auth", {
       method: "GET",
-      headers: {
-        "Authorization": token,
-        "Content-Type": "application/json"
-      }
+      headers: headers
     });
 
     if (!response.ok) {

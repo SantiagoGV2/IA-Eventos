@@ -12,7 +12,17 @@ document.addEventListener('click', function (e) {
     userPanel.classList.remove('active');
   }
 });
-
+function getAuthHeaders() {
+    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
+    if (!token) {
+        console.error("No hay token para la petición.");
+        return null;
+    }
+    return {
+        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
+        "Content-Type": "application/json"
+    };
+}
 
 document.addEventListener("DOMContentLoaded", async () => {
   document.getElementById("btnLogout").addEventListener("click", cerrarSesion);
@@ -33,18 +43,15 @@ function obtenerIniciales(nombreCompleto) {
 let usuarioGlobal = null;
 
 async function obtenerUsuario() {
-  try {
-    const token = localStorage.getItem("jwtToken");
-    if (!token || !token.startsWith("Bearer ")) {
-      throw new Error("No hay token disponible o es inválido");
+  const headers = getAuthHeaders();
+    if (!headers) {
+        cerrarSesion(); // Si no hay token, no podemos continuar.
+        return;
     }
-
+  try {
     const response = await fetch("http://localhost:8080/project-AI/usuarios/auth", {
       method: "GET",
-      headers: {
-        "Authorization": token,
-        "Content-Type": "application/json"
-      }
+      headers: headers
     });
 
     if (!response.ok) {
@@ -77,19 +84,13 @@ function cerrarSesion() {
 }
 
 async function compartirEvento(eventoId, medio) {
-  const token = localStorage.getItem("jwtToken");
-  if (!token || !token.startsWith("Bearer ")) {
-    alert("Usuario no autenticado");
-    return;
-  }
+  const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
 
   try {
     const response = await fetch("http://localhost:8080/project-AI/compartir", {
       method: "POST",
-      headers: {
-        "Authorization": token,
-        "Content-Type": "application/json"
-      },
+      headers: headers,
       body: JSON.stringify({
         eventosComunidad: {
           eveComuId: parseInt(eventoId)
@@ -135,11 +136,8 @@ async function compartirEvento(eventoId, medio) {
 
 
 async function guardarEvento(eventoId, button) {
-  const token = localStorage.getItem("jwtToken");
-  if (!token || !token.startsWith("Bearer ")) {
-    alert("Usuario no autenticado");
-    return;
-  }
+  const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
 
   // Desactiva el botón para evitar múltiples clics
   button.disabled = true;
@@ -152,10 +150,7 @@ async function guardarEvento(eventoId, button) {
   try {
     const response = await fetch("http://localhost:8080/project-AI/eventoGuardadoAG", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": token
-      },
+      headers: headers,
       body: JSON.stringify(body)
     });
 
@@ -269,12 +264,13 @@ function construirTarjetaEvento(evento) {
 }
 
 const fetchEvento = async () => {
+  const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
+
   try {
     const response = await fetch('http://localhost:8080/project-AI/eventoComuTodo', {
       method: "GET",
-      headers: {
-        'Authorization': localStorage.getItem('jwtToken')
-      }
+      headers: headers,
     });
 
     if (response.ok) {
@@ -311,13 +307,12 @@ async function filtrarEventos() {
   if (categoria) params.append("categoria", categoria);
   if (estado) params.append("estado", estado);
   if (ubicacion) params.append("ubicacion", ubicacion);
-
+  const headers = getAuthHeaders();
+    if (!headers) return; // Si no hay token, no hacer nada.
   try {
     const response = await fetch(`http://localhost:8080/project-AI/eventoComuFiltro?${params.toString()}`, {
       method: "GET",
-      headers: {
-        "Content-Type": "application/json"
-      }
+      headers: headers,
     });
 
     if (!response.ok) {
