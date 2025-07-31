@@ -46,17 +46,26 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const data = await response.json();
                 if (response.ok) {
-                    alert(data.message || 'Registro exitoso');
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Registro exitoso!',
+                        text: data.message || 'Ahora serás redirigido a la página de inicio de sesión.',
+                        timer: 2000,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
+                    });
                     formUsuario.reset();
-                    // Redirigir al usuario después del registro exitoso
-                    window.location.href = '/admin/index.html'; // Ajusta la URL según tu proyecto
+                    window.location.href = '/admin/adm_login.html';
                 } else {
-                    console.error('Error:', data);
-                    alert(data.message || 'Error al registrar usuario.');
+                    throw new Error(data.message || 'Error al registrar el usuario.');
                 }
             } catch (error) {
-                console.error('Error en la conexión con el servidor:', error);
-                alert('Error en la conexión con el servidor.');
+                console.error('Error en el registro:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error en el registro',
+                    text: error.message,
+                });
             }
         });
     }

@@ -1,4 +1,30 @@
 'use strict';
+// --- Funciones Auxiliares de Notificación ---
+function showSuccess(message) {
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function showError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: message
+    });
+}
+
+function showWarning(title, text) {
+    Swal.fire({
+        icon: 'warning',
+        title: title,
+        text: text
+    });
+}
 function getAuthHeaders() {
     const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
     if (!token) {
@@ -49,15 +75,15 @@ if (formCrearEvento) {
             });
             
             if (response.ok) {
-                alert('Registro exitoso');
+                showSuccess("Registro exitoso (Evento)");
                 formCrearEvento.reset();
             } else {
                 console.error('Error al registrar (Evento):', await response.text());
-                alert('Error al registrar el evento.');
+                showWarning("Error al registrar el evento.");
             }
         } catch (error) {
             console.error('Error en la conexión (Evento):', error);
-            alert('Error en la conexión con el servidor.');
+            showWarning("Error en la conexión con el servidor.");
         }
     });
 }

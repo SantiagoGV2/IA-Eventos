@@ -1,3 +1,29 @@
+// --- Funciones Auxiliares de Notificación ---
+function showSuccess(message) {
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function showError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: message
+    });
+}
+
+function showWarning(title, text) {
+    Swal.fire({
+        icon: 'warning',
+        title: title,
+        text: text
+    });
+}
 function getAuthHeaders() {
     const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
     if (!token) {
@@ -157,11 +183,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('formEditarEvento').dataset.id = id;
       } else {
         console.error('Error al obtener los datos del evento:', await response.text());
-        alert('Error al cargar los datos para editar.');
+        showWarning("Error al cargar los datos para editar.");
       }
     } catch (error) {
       console.error('Error en la conexión:', error);
-      alert('Error en la conexión al servidor.');
+      showWarning("Error en la conexión al servidor.");
     }
   };
   
@@ -185,7 +211,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
   
         if (response.ok) {
-          alert('Evento eliminado correctamente');
+          showSuccess("Evento eliminado correctamente");
           // Cerrar el modal
           const modalInstance = bootstrap.Modal.getInstance(modal);
           modalInstance.hide();
@@ -193,11 +219,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           await fetchEvento();
         } else {
           console.error('Error al eliminar el evento:', await response.text());
-          alert('Error al eliminar el evento.');
+          showWarning("Error al eliminar el evento.");
         }
       } catch (error) {
         console.error('Error en la conexión al eliminar:', error);
-        alert('Error al eliminar el evento.');
+        showWarning("Error al eliminar el evento.");
       }
     });
   };
@@ -235,7 +261,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       });
   
       if (response.ok) {
-        alert('Evento actualizado correctamente');
+        showSuccess("Evento actualizado correctamente");
         // Cerrar el modal
         const modal = bootstrap.Modal.getInstance(document.getElementById('modalEditarEvento'));
         modal.hide();
@@ -243,11 +269,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         await fetchEvento();
       } else {
         console.error('Error al actualizar el evento:', await response.text());
-        alert('Error al actualizar el evento.');
+        showWarning("Error al actualizar el evento.");
       }
     } catch (error) {
       console.error('Error en la conexión al actualizar:', error);
-      alert('Error al actualizar el evento.');
+      showWarning("Error al actualizar el evento.");
     }
   });
 

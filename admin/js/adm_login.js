@@ -11,7 +11,12 @@ document.addEventListener('DOMContentLoaded', function () {
             const password = document.getElementById('loginPassword').value.trim();
 
             if (!email || !password) {
-                alert("Por favor, ingresa tu correo y contraseña.");
+               Swal.fire({
+                    icon: 'warning',
+                    title: 'Campos incompletos',
+                    text: 'Por favor, ingresa tu correo y contraseña.',
+                    confirmButtonColor: '#3085d6'
+                });
                 return;
             }
 
@@ -31,23 +36,34 @@ document.addEventListener('DOMContentLoaded', function () {
                 console.log("Respuesta del backend:", data);
 
                 if (data.token) {
-                    // 1. Guarda el token limpio (esto ya está correcto)
                     localStorage.setItem("jwtToken", data.token);
 
-                    // 2. Dale al navegador un pequeño respiro (100 milisegundos) antes de redirigir
-                    // para asegurar que la operación de guardado se complete.
-                    setTimeout(() => {
-                        window.location.href = "/admin/pages/adm_evento.html";
-                    }, 100); // 100ms es suficiente y el usuario no lo notará.
+                    await Swal.fire({
+                        icon: 'success',
+                        title: '¡Inicio de sesión exitoso!',
+                        text: 'Serás redirigido en un momento.',
+                        timer: 1500,
+                        showConfirmButton: false,
+                        allowOutsideClick: false
+                    });
+
+                    window.location.href = "/admin/pages/adm_evento.html";
 
                 } else {
-                    alert("Error: No se recibió el token de autenticación.");
+                    throw new Error("No se recibió el token de autenticación.");
                 }
 
             } catch (error) {
                 console.error("Error en el login:", error);
-                alert("Error al iniciar sesión. Verifique sus credenciales.");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error al iniciar sesión',
+                    text: error.message || 'Verifique sus credenciales e intente de nuevo.',
+                    confirmButtonColor: '#d33'
+                });
             }
         });
     }
 });
+
+

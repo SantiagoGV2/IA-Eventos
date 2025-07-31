@@ -12,6 +12,33 @@ document.addEventListener('click', function (e) {
     userPanel.classList.remove('active');
   }
 });
+
+// --- Funciones Auxiliares de Notificación ---
+function showSuccess(message) {
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function showError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: message
+    });
+}
+
+function showWarning(title, text) {
+    Swal.fire({
+        icon: 'warning',
+        title: title,
+        text: text
+    });
+}
 function getAuthHeaders() {
     const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
     if (!token) {
@@ -71,7 +98,12 @@ async function obtenerUsuario() {
 
   } catch (error) {
     console.error("Error al obtener usuario:", error);
-    alert(error.message);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Sesión inválida',
+            text: error.message,
+            confirmButtonText: 'Ir a Login'
+          });
     localStorage.removeItem("jwtToken");
     window.location.href = "/pages/login.html";
   }
@@ -79,8 +111,21 @@ async function obtenerUsuario() {
 }
 
 function cerrarSesion() {
-  localStorage.removeItem('jwtToken');
-  window.location.href = '/pages/login.html';
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Tu sesión actual se cerrará.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = '/pages/login.html';
+        }
+    });
 }
 
 async function compartirEvento(eventoId, medio) {
@@ -105,22 +150,23 @@ async function compartirEvento(eventoId, medio) {
     }
 
     const resultado = await response.json();
-    alert("✅ Evento compartido exitosamente");
-    console.log("Evento compartido:", resultado);
-
-    // Abrir enlace dependiendo del medio
     const titulo = encodeURIComponent(resultado.eveComuTitulo || "Evento");
     const enlace = encodeURIComponent(resultado.eveComuEnlace || "http://localhost:8080/");
     const mensaje = encodeURIComponent(`¡Hola! Te comparto este evento: ${titulo}. Puedes verlo aquí: ${enlace}`);
 
     // Copiar enlace al portapapeles
-    navigator.clipboard.writeText(decodeURIComponent(enlace))
-      .then(() => {
-        console.log("Enlace copiado al portapapeles:", decodeURIComponent(enlace));
-      })
-      .catch(err => {
-        console.warn("No se pudo copiar el enlace al portapapeles:", err);
-      });
+    navigator.clipboard.writeText(decodeURIComponent(enlace)).then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Enlace copiado!',
+                text: 'El enlace del evento ha sido copiado al portapapeles.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+    });
+
     if (medio === "whatsapp") {
       window.open(`https://wa.me/?text=${mensaje}`, "_blank");
     } else if (medio === "gmail") {
@@ -130,7 +176,7 @@ async function compartirEvento(eventoId, medio) {
 
   } catch (error) {
     console.error("Error al compartir evento:", error);
-    alert("❌ No se pudo compartir el evento");
+    showError("No se pudo compartir el evento. Inténtalo de nuevo.");
   }
 }
 
@@ -155,24 +201,22 @@ async function guardarEvento(eventoId, button) {
     });
 
     if (response.ok) {
-      eventosGuardadosIds.push(parseInt(eventoId)); // <-- Agregar a la lista
-      alert("Evento guardado exitosamente.");
-      button.textContent = "Guardado";
+            eventosGuardadosIds.push(parseInt(eventoId));
+            showSuccess("Evento guardado exitosamente.");
+            button.innerHTML = '<i class="bi bi-bookmark-check-fill"></i> Guardado';
+        } else if (response.status === 406) {
+            showWarning("Evento ya guardado", "Este evento ya se encuentra en tu lista de guardados.");
+            button.innerHTML = '<i class="bi bi-bookmark-check-fill"></i> Ya guardado';
+        } else {
+            const errorData = await response.json();
+            throw new Error(errorData.message || "No se pudo guardar el evento.");
+        }
+    } catch (error) {
+        console.error("Error al guardar evento:", error);
+        showError(error.message);
+        button.innerHTML = '<i class="bi bi-bookmark-plus"></i> Reintentar';
+        button.disabled = false;
     }
-     else if (response.status === 406) {
-      alert("El evento ya está guardado.");
-      button.textContent = "Ya guardado";
-    } else {
-      alert("No se pudo guardar el evento, ya esta guardado.");
-      button.textContent = "Reintentar";
-      button.disabled = false;
-    }
-  } catch (error) {
-    console.error("Error al guardar evento:", error);
-    alert("Error al guardar evento.");
-    button.textContent = "Error";
-    button.disabled = false;
-  }
 }
 function construirTarjetaEvento(evento) {
   const fechaInicio = new Date(evento.eveComuFechaInicio);
@@ -323,7 +367,7 @@ async function filtrarEventos() {
     renderizarEventos(eventos);
   } catch (error) {
     console.error("Error al filtrar eventos:", error);
-    alert("No se pudieron obtener los eventos filtrados.");
+    showError("No se pudieron obtener los eventos filtrados.");
   }
 }
 

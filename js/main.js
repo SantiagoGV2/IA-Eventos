@@ -23,6 +23,45 @@ document.addEventListener('click', function(e) {
         userPanel.classList.remove('active');
     }
 });
+// --- Funciones Auxiliares de Notificación ---
+function showSuccess(message) {
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function showError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: message
+    });
+}
+
+function showWarning(title, text) {
+    Swal.fire({
+        icon: 'warning',
+        title: title,
+        text: text
+    });
+}
+async function showConfirm(title, text, confirmButtonText = 'Sí, continuar') {
+    const result = await Swal.fire({
+        title: title,
+        text: text,
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: confirmButtonText,
+        cancelButtonText: 'Cancelar'
+    });
+    return result.isConfirmed;
+}
 function getAuthHeaders() {
     const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
     if (!token) {
@@ -75,7 +114,12 @@ async function obtenerUsuario() {
 
     } catch (error) {
         console.error("Error al obtener usuario:", error);
-        alert(error.message);
+        await Swal.fire({
+            icon: 'error',
+            title: 'Sesión inválida',
+            text: error.message,
+            confirmButtonText: 'Ir a Login'
+          });
         localStorage.removeItem("jwtToken");
         window.location.href = "/pages/login.html";
     }
@@ -100,16 +144,11 @@ async function obtenerEventosGuardadosIds() {
         }
 
         const eventosGuardados = await response.json();
-        
-        // **LA CLAVE ESTÁ AQUÍ**
-        // Transformamos la respuesta completa en una lista simple de IDs.
-        // Asumo que el objeto evento guardado tiene una estructura como { evento: { eveId: 123 } }
-        // Ajusta 'evento.evento.eveId' según la estructura JSON que te devuelve tu API.
         eventosGuardadosIds = eventosGuardados
-    .map(eg => eg.eventoId) 
-    .filter(id => id != null);
+        .map(eg => eg.eventoId) 
+        .filter(id => id != null);
 
-console.log("IDs de eventos guardados cargados (CORREGIDO):", eventosGuardadosIds);
+        console.log("IDs de eventos guardados cargados (CORREGIDO):", eventosGuardadosIds);
 
     } catch (error) {
         console.error("Error en obtenerEventosGuardadosIds:", error);
@@ -119,13 +158,24 @@ console.log("IDs de eventos guardados cargados (CORREGIDO):", eventosGuardadosId
 
 
 function cerrarSesion() {
-    localStorage.removeItem('jwtToken');
-    window.location.href = '/pages/login.html';
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Tu sesión actual se cerrará.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = '/pages/login.html';
+        }
+    });
 }
 function crearTarjetaEventoHTML(evento, vista = 'busqueda') {
-    // 1. NORMALIZAR EL OBJETO EVENTO
-    // Para manejar tanto eventos de la IA como los guardados que podrían tener nombres diferentes.
-    // Usamos el estado del backend como la fuente de verdad.
+
     const esActivo = (evento.eveEstado || evento.eventoEstado || evento.eventoComuEstado || '').toLowerCase() === 'activo';
     const titulo = evento.eveTitulo || evento.eventoTitulo || evento.eventoComuTitulo || 'Título no disponible';
     const descripcion = evento.eveDescripcion || evento.eventoDescripcion || evento.eventoComuDescripcion || 'Descripción no disponible';
@@ -202,7 +252,12 @@ function crearTarjetaEventoHTML(evento, vista = 'busqueda') {
     `;
 }
 async function quitarEventoGuardado(eveGuaId, eventoId, button) {
-    if (!confirm("¿Estás seguro de que deseas quitar este evento de tus guardados?")) {
+    const isConfirmed = await showConfirm(
+        '¿Estás seguro?',
+        'El evento se quitará de tu lista de guardados.',
+        'Sí, quitar evento guardado'
+    );
+    if (!isConfirmed) {
         return; // El usuario canceló la acción
     }
 
@@ -226,14 +281,15 @@ async function quitarEventoGuardado(eveGuaId, eventoId, button) {
             // 2. Actualizar nuestro estado local (el array de IDs) para consistencia
             eventosGuardadosIds = eventosGuardadosIds.filter(id => id !== eventoId);
             
-            alert("Evento quitado exitosamente.");
+            showSuccess("Evento quitado exitosamente.");
         } else {
-            throw new Error('No se pudo quitar el evento.');
+            const errorData = await response.json();
+            throw new Error(errorData.message || 'No se pudo quitar el evento.');
         }
 
     } catch (error) {
         console.error("Error al quitar evento:", error);
-        alert(error.message);
+        showError(error.message);
         // Volver a habilitar el botón si falla
         button.disabled = false;
         button.innerHTML = '<i class="bi bi-bookmark-x-fill"></i> Quitar';
@@ -252,16 +308,14 @@ async function buscarEventos() {
     errorMessage.classList.add("d-none");
     loading.classList.remove("d-none");
 
-    if (!consulta) {
-        errorMessage.textContent = "Por favor, ingrese un tema para buscar eventos.";
-        errorMessage.classList.remove("d-none");
-        loading.classList.add("d-none");
+   if (!consulta) {
+        showWarning('Búsqueda vacía', 'Por favor, ingresa un tema para buscar eventos.');
         return;
     }
 
     const headers = getAuthHeaders();
     if (!headers) {
-        alert("Necesitas iniciar sesión para buscar.");
+        showError("Debes iniciar sesión para realizar una búsqueda.");
         return;
     }
 
@@ -316,8 +370,7 @@ async function buscarEventos() {
     } catch (error) {
         console.error("Error en buscarEventos:", error);
         loading.classList.add("d-none");
-        errorMessage.textContent = error.message;
-        errorMessage.classList.remove("d-none");
+        showError(error.message);
     }
 }
 
@@ -343,22 +396,22 @@ async function compartirEvento(eventoId, medio) {
         }
 
         const resultado = await response.json();
-        alert("✅ Evento compartido exitosamente");
-        console.log("Evento compartido:", resultado);
-
-        // Abrir enlace dependiendo del medio
         const titulo = encodeURIComponent(resultado.eveTitulo || "Evento");
         const enlace = encodeURIComponent(resultado.eveEnlace || "http://localhost:8080/");
         const mensaje = encodeURIComponent(`¡Hola! Te comparto este evento: ${titulo}. Puedes verlo aquí: ${enlace}`);
 
         // Copiar enlace al portapapeles
-        navigator.clipboard.writeText(decodeURIComponent(enlace))
-        .then(() => {
-        console.log("Enlace copiado al portapapeles:", decodeURIComponent(enlace));
-        })
-        .catch(err => {
-        console.warn("No se pudo copiar el enlace al portapapeles:", err);
-        });
+       navigator.clipboard.writeText(decodeURIComponent(enlace)).then(() => {
+            Swal.fire({
+                icon: 'success',
+                title: '¡Enlace copiado!',
+                text: 'El enlace del evento ha sido copiado al portapapeles.',
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000
+            });
+    });
         if (medio === "whatsapp") {
             window.open(`https://wa.me/?text=${mensaje}`, "_blank");
         } else if (medio === "gmail") {
@@ -368,7 +421,7 @@ async function compartirEvento(eventoId, medio) {
 
     } catch (error) {
         console.error("Error al compartir evento:", error);
-        alert("❌ No se pudo compartir el evento");
+        showError("No se pudo compartir el evento. Inténtalo de nuevo.");
     }
 }
 
@@ -393,7 +446,7 @@ async function guardarEvento(eventoId, button) {
         });
 
         if (response.ok) {
-            alert("Evento guardado exitosamente.");
+            showSuccess("Evento guardado exitosamente.");
              // 1. Actualizar el estado local
         const idNumerico = parseInt(eventoId);
         if (!eventosGuardadosIds.includes(idNumerico)) {
@@ -406,17 +459,16 @@ async function guardarEvento(eventoId, button) {
                 <i class="bi bi-bookmark-check-fill"></i> Guardado
             </div>`;
         } else if (response.status === 406) {
-            alert("El evento ya está guardado.");
-            button.textContent = "Ya guardado";
+            showWarning("Evento ya guardado", "Este evento ya se encuentra en tu lista de guardados.");
+            button.innerHTML = '<i class="bi bi-bookmark-check-fill"></i> Ya guardado';
         } else {
-            alert("No se pudo guardar el evento, ya esta guardado.");
-            button.textContent = "Reintentar";
-            button.disabled = false;
+            const errorData = await response.json();
+            throw new Error(errorData.message || "No se pudo guardar el evento.");
         }
     } catch (error) {
         console.error("Error al guardar evento:", error);
-        alert("Error al guardar evento.");
-        button.textContent = "Error";
+        showError(error.message);
+        button.innerHTML = '<i class="bi bi-bookmark-plus"></i> Reintentar';
         button.disabled = false;
     }
 }
@@ -500,7 +552,7 @@ async function HistorialPorUsuario() {
     const headers = getAuthHeaders();
     if (!headers) {
         // Manejar el caso de que no haya sesión
-        alert("Necesitas iniciar sesión para ver tu historial.");
+         showError("Debes iniciar sesión para ver tu historial.");
         cerrarSesion();
         return; 
     }
@@ -566,12 +618,17 @@ function formatearFecha(fecha) {
 }
 
 async function eliminarHistorial() {
-    if (!confirm("¿Estás seguro de que deseas borrar tu historial de búsqueda? Esta acción no se puede deshacer.")) {
-        return;
+    const isConfirmed = await showConfirm(
+        '¿Estás seguro?',
+        'El historial de tus busquedas se borrara.',
+        'Sí, borrar historial'
+    );
+    if (!isConfirmed) {
+        return; // El usuario canceló la acción
     }
     const headers = getAuthHeaders();
     if (!headers) {
-        alert("Necesitas iniciar sesión.");
+        showWarning("Necesitas iniciar sesión.");
         return;
     }
 
@@ -586,7 +643,7 @@ async function eliminarHistorial() {
         // ==================================================================
         // Primero, verificamos si la sesión expiró (error 401).
         if (response.status === 401) {
-            alert("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
+            showWarning("Tu sesión ha expirado. Por favor, inicia sesión de nuevo.");
             cerrarSesion(); // Llamamos a tu función de logout para limpiar y redirigir.
             return; // Detenemos la ejecución de la función aquí.
         }
@@ -599,7 +656,7 @@ async function eliminarHistorial() {
         }
 
         // Si todo fue exitoso (response.ok es true)
-        alert("Historial eliminado correctamente");
+        showSuccess("Historial eliminado correctamente");
         await HistorialPorUsuario(); // Recargamos la vista del historial (que ahora estará vacía).
         
     } catch (error) {
@@ -608,7 +665,7 @@ async function eliminarHistorial() {
         if (error.message.includes("expirado")) {
             // No hacemos nada, ya se manejó.
         } else {
-            alert(error.message || "Hubo un error de red al borrar el historial.");
+            showError("Hubo un error de red al borrar el historial.");
         }
     }
 }

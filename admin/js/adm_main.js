@@ -3,6 +3,33 @@ document.addEventListener("DOMContentLoaded", async () => {
   await obtenerUsuario();
 });
 
+// --- Funciones Auxiliares de Notificación ---
+function showSuccess(message) {
+    Swal.fire({
+        icon: 'success',
+        title: '¡Éxito!',
+        text: message,
+        timer: 1500,
+        showConfirmButton: false
+    });
+}
+
+function showError(message) {
+    Swal.fire({
+        icon: 'error',
+        title: 'Oops...',
+        text: message
+    });
+}
+
+function showWarning(title, text) {
+    Swal.fire({
+        icon: 'warning',
+        title: title,
+        text: text
+    });
+}
+
 function obtenerIniciales(nombreCompleto) {
   if (!nombreCompleto) return "??";
   const palabras = nombreCompleto.trim().split(" ");
@@ -51,15 +78,33 @@ async function obtenerUsuario() {
 
   } catch (error) {
     console.error("Error al obtener usuario:", error);
-    alert(error.message);
-    localStorage.removeItem("jwtToken");
-    window.location.href = "/admin/index.html";
-  }
+        await Swal.fire({
+            icon: 'error',
+            title: 'Sesión inválida',
+            text: error.message,
+            confirmButtonText: 'Ir a Login'
+          });
+        localStorage.removeItem("jwtToken");
+        window.location.href = "/admin/index.html";
+    }
 }
 
 function cerrarSesion() {
-  localStorage.removeItem('jwtToken');
-  window.location.href = '/admin/index.html';
+    Swal.fire({
+        title: '¿Estás seguro?',
+        text: "Tu sesión actual se cerrará.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sí, cerrar sesión',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            localStorage.removeItem('jwtToken');
+            window.location.href = '/admin/index.html';
+        }
+    });
 }
 
 
