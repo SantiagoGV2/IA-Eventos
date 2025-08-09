@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", async () => {
     document.getElementById("btnHistorialEventos").addEventListener("click", HistorialPorUsuario);
     document.getElementById("btnBorrarHistorial").addEventListener("click", eliminarHistorial);
     document.getElementById("btnBorrarHistorial").classList.add("d-none");
+    document.getElementById("consulta").addEventListener("keydown", (event) => {
+        if (event.key === "Enter") {
+            event.preventDefault(); 
+            buscarEventos();
+        }
+    });
     await obtenerUsuario();
     await obtenerEventosGuardadosIds();
 });
@@ -63,15 +69,8 @@ async function showConfirm(title, text, confirmButtonText = 'Sí, continuar') {
     return result.isConfirmed;
 }
 function getAuthHeaders() {
-    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
-    if (!token) {
-        console.error("No hay token para la petición.");
-        return null;
-    }
-    return {
-        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
-        "Content-Type": "application/json"
-    };
+    // Usar el nuevo sistema de autenticación seguro
+    return window.authSecurity.getAuthHeaders();
 }
 
 function obtenerIniciales(nombreCompleto) {
@@ -92,7 +91,7 @@ async function obtenerUsuario() {
         return;
     }
     try {
-        const response = await fetch("http://localhost:8080/project-AI/usuarios/auth", {
+        const response = await fetch(window.authSecurity.getApiUrl("/usuarios/auth"), {
            method: "GET",
             headers: headers
         });
@@ -120,8 +119,8 @@ async function obtenerUsuario() {
             text: error.message,
             confirmButtonText: 'Ir a Login'
           });
-        localStorage.removeItem("jwtToken");
-        window.location.href = "/pages/login.html";
+        window.authSecurity.clearToken();
+        window.authSecurity.redirectToLogin(error.message);
     }
 
     await obtenerEventosGuardadosIds();
@@ -132,7 +131,7 @@ async function obtenerEventosGuardadosIds() {
     if (!headers) return; // Si no hay token, no hacer nada.
 
     try {
-        const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoUsuario`, {
+        const response = await fetch(window.authSecurity.getApiUrl("/eventoGuardadoUsuario"), {
             method: "GET",
             headers: headers
         });
@@ -167,10 +166,10 @@ function cerrarSesion() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, cerrar sesión',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            localStorage.removeItem('jwtToken');
-            window.location.href = '/pages/login.html';
+            // Usar el nuevo sistema de logout seguro
+            await window.authSecurity.logout();
         }
     });
 }
@@ -269,7 +268,7 @@ async function quitarEventoGuardado(eveGuaId, eventoId, button) {
     button.innerHTML = '<i class="bi bi-hourglass-split"></i> Quitando...';
 
     try {
-        const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoE/${eveGuaId}`, {
+        const response = await fetch(window.authSecurity.getApiUrl(`/eventoGuardadoE/${eveGuaId}`), {
             method: "DELETE",
             headers: headers
         });
@@ -321,7 +320,7 @@ async function buscarEventos() {
 
     // 2. REALIZAR LA PETICIÓN (FETCH) AL BACKEND
     try {
-        const response = await fetch("http://localhost:8080/project-AI/buscar", {
+        const response = await fetch(window.authSecurity.getApiUrl("/buscar"), {
            method: "POST",
             headers: headers,
             body: JSON.stringify({ consulta })
@@ -379,7 +378,7 @@ async function compartirEvento(eventoId, medio) {
     if (!headers) return; // Si no hay token, no hacer nada.
 
     try {
-        const response = await fetch("http://localhost:8080/project-AI/compartir", {
+        const response = await fetch(window.authSecurity.getApiUrl("/compartir"), {
             method: "POST",
             headers: headers,
             body: JSON.stringify({
@@ -439,7 +438,7 @@ async function guardarEvento(eventoId, button) {
     };
 
     try {
-        const response = await fetch("http://localhost:8080/project-AI/eventoGuardadoAG", {
+        const response = await fetch(window.authSecurity.getApiUrl("/eventoGuardadoAG"), {
             method: "POST",
             headers: headers,
             body: JSON.stringify(body)
@@ -487,7 +486,7 @@ async function obtenerEventosPorUsuario() {
     if (!headers) return; 
     try {
        
-        const response = await fetch(`http://localhost:8080/project-AI/eventoGuardadoUsuario`, {
+        const response = await fetch(window.authSecurity.getApiUrl("/eventoGuardadoUsuario"), {
              method: "GET",
              headers: headers
         });
@@ -557,7 +556,7 @@ async function HistorialPorUsuario() {
         return; 
     }
     try {
-        const response = await fetch("http://localhost:8080/project-AI/eventosU", {
+        const response = await fetch(window.authSecurity.getApiUrl("/eventosU"), {
             method: "GET",
             headers: headers
         });
@@ -633,7 +632,7 @@ async function eliminarHistorial() {
     }
 
     try {
-        const response = await fetch("http://localhost:8080/project-AI/historial", {
+        const response = await fetch(window.authSecurity.getApiUrl("/historial"), {
             method: "DELETE",
             headers: headers
         });
@@ -724,18 +723,15 @@ toggleCategorias.addEventListener('click', () => {
 filterButtons.forEach(button => {
     button.addEventListener('click', function () {
         const isActive = this.classList.contains('active');
-
-        // Desactivar todos los botones
         filterButtons.forEach(btn => btn.classList.remove('active'));
 
         if (!isActive) {
-            // Activar botón actual y poner su texto en el input
             this.classList.add('active');
             inputBusqueda.value = this.textContent.trim();
-            inputBusqueda.disabled = true; // Bloquear escritura
+            buscarEventos(); // <-- LLAMA A LA BÚSQUEDA AUTOMÁTICAMENTE
         } else {
+            // Si el usuario vuelve a hacer clic para deseleccionar, limpia el input
             inputBusqueda.value = '';
-            inputBusqueda.disabled = false; // Permitir escritura
         }
     });
 });

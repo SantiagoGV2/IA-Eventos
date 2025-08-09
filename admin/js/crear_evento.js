@@ -26,15 +26,8 @@ function showWarning(title, text) {
     });
 }
 function getAuthHeaders() {
-    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
-    if (!token) {
-        console.error("No hay token para la petición.");
-        return null;
-    }
-    return {
-        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
-        "Content-Type": "application/json"
-    };
+    // Usar el nuevo sistema de autenticación seguro
+    return window.authSecurity.getAuthHeaders();
 }
 // Manejo del formulario
 const formCrearEvento = document.getElementById('formCrearEvento');
@@ -57,9 +50,12 @@ if (formCrearEvento) {
             eveComuCategoria: datos.categoriaEvento,
         });
         const headers = getAuthHeaders();
-        if (!headers) return;
+        if (!headers) {
+            window.authSecurity.redirectToLogin('Sesión requerida para crear eventos');
+            return;
+        }
         try {
-            const response = await fetch('http://localhost:8080/project-AI/eventoComuAG', {
+            const response = await fetch(window.authSecurity.getApiUrl('/eventoComuAG'), {
                 method: "POST",
                 headers: headers,
                 body: JSON.stringify({
@@ -77,9 +73,11 @@ if (formCrearEvento) {
             if (response.ok) {
                 showSuccess("Registro exitoso (Evento)");
                 formCrearEvento.reset();
+            } else if (response.status === 401) {
+                window.authSecurity.redirectToLogin('Sesión expirada');
             } else {
                 console.error('Error al registrar (Evento):', await response.text());
-                showWarning("Error al registrar el evento.");
+                showError("Error al registrar el evento.");
             }
         } catch (error) {
             console.error('Error en la conexión (Evento):', error);

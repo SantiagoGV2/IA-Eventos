@@ -20,8 +20,19 @@ document.addEventListener('DOMContentLoaded', function () {
                 return;
             }
 
+            // Validar formato de email
+            if (!window.authSecurity.isValidEmail(email)) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Email inválido',
+                    text: 'Por favor, ingresa un email válido.',
+                    confirmButtonColor: '#d33'
+                });
+                return;
+            }
+
             try {
-                const response = await fetch("http://localhost:8080/project-AI/admin/login", {
+                const response = await fetch(window.authSecurity.getApiUrl("/admin/login"), {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ email, password })
@@ -33,10 +44,12 @@ document.addEventListener('DOMContentLoaded', function () {
                     throw new Error(data.message || "Error en las credenciales");
                 }
 
-                console.log("Respuesta del backend:", data);
+                // NO registrar información sensible en consola
+                console.log("Login de admin exitoso");
 
                 if (data.token) {
-                    localStorage.setItem("jwtToken", data.token);
+                    // Usar el nuevo sistema de almacenamiento seguro
+                    window.authSecurity.setToken(data.token, data.expiresIn || 3600);
 
                     await Swal.fire({
                         icon: 'success',
@@ -66,4 +79,17 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
-
+document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar/ocultar contraseña
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('loginPassword');
+            
+            if (togglePassword && password) {
+                togglePassword.addEventListener('click', function() {
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
+                    this.classList.toggle('bi-eye');
+                    this.classList.toggle('bi-eye-slash');
+                });
+            }
+        });

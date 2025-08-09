@@ -42,15 +42,8 @@ function obtenerIniciales(nombreCompleto) {
 let usuarioGlobal = null;
 
 function getAuthHeaders() {
-    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
-    if (!token) {
-        console.error("No hay token para la petición.");
-        return null;
-    }
-    return {
-        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
-        "Content-Type": "application/json"
-    };
+    // Usar el nuevo sistema de autenticación seguro
+    return window.authSecurity.getAuthHeaders();
 }
 async function obtenerUsuario() {
   const headers = getAuthHeaders();
@@ -59,7 +52,7 @@ async function obtenerUsuario() {
         return;
     }
   try {
-    const response = await fetch("http://localhost:8080/project-AI/admin/auth", {
+    const response = await fetch(window.authSecurity.getApiUrl("/admin/auth"), {
       method: "GET",
       headers: headers
     });
@@ -84,8 +77,8 @@ async function obtenerUsuario() {
             text: error.message,
             confirmButtonText: 'Ir a Login'
           });
-        localStorage.removeItem("jwtToken");
-        window.location.href = "/admin/index.html";
+        window.authSecurity.clearToken();
+        window.authSecurity.redirectToLogin(error.message);
     }
 }
 
@@ -99,10 +92,9 @@ function cerrarSesion() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, cerrar sesión',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(async (result) => {
         if (result.isConfirmed) {
-            localStorage.removeItem('jwtToken');
-            window.location.href = '/admin/index.html';
+            await window.authSecurity.logout();
         }
     });
 }
@@ -145,3 +137,18 @@ overlay.addEventListener('click', function () {
   sidebar.classList.remove('active');
   overlay.style.display = 'none';
 });
+
+  document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar/ocultar contraseña
+            const togglePassword = document.getElementById('togglePassword');
+            const password = document.getElementById('loginPassword');
+            
+            if (togglePassword && password) {
+                togglePassword.addEventListener('click', function() {
+                    const type = password.getAttribute('type') === 'password' ? 'text' : 'password';
+                    password.setAttribute('type', type);
+                    this.classList.toggle('bi-eye');
+                    this.classList.toggle('bi-eye-slash');
+                });
+            }
+        });

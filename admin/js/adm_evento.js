@@ -1,49 +1,45 @@
 // --- Funciones Auxiliares de Notificación ---
 function showSuccess(message) {
-    Swal.fire({
-        icon: 'success',
-        title: '¡Éxito!',
-        text: message,
-        timer: 1500,
-        showConfirmButton: false
-    });
+  Swal.fire({
+    icon: 'success',
+    title: '¡Éxito!',
+    text: message,
+    timer: 1500,
+    showConfirmButton: false
+  });
 }
 
 function showError(message) {
-    Swal.fire({
-        icon: 'error',
-        title: 'Oops...',
-        text: message
-    });
+  Swal.fire({
+    icon: 'error',
+    title: 'Oops...',
+    text: message
+  });
 }
 
 function showWarning(title, text) {
-    Swal.fire({
-        icon: 'warning',
-        title: title,
-        text: text
-    });
+  Swal.fire({
+    icon: 'warning',
+    title: title,
+    text: text
+  });
 }
 function getAuthHeaders() {
-    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
-    if (!token) {
-        console.error("No hay token para la petición.");
-        return null;
-    }
-    return {
-        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
-        "Content-Type": "application/json"
-    };
+  // Usar el nuevo sistema de autenticación seguro
+  return window.authSecurity.getAuthHeaders();
 }
 document.addEventListener('DOMContentLoaded', async () => {
   // Función para obtener y mostrar los datos de la base de datos
   const headers = getAuthHeaders();
-    if (!headers) return;
+  if (!headers) {
+    window.authSecurity.redirectToLogin('Sesión requerida');
+    return;
+  }
 
   const fetchEvento = async () => {
     try {
       // Realizamos una petición GET a la API que devuelve todos los eventos
-      const response = await fetch('http://localhost:8080/project-AI/eventoComu', {
+      const response = await fetch(window.authSecurity.getApiUrl('/eventoComu'), {
         method: "GET",
         headers: headers
       });
@@ -58,7 +54,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         eventos.forEach(eve => {
           // Determinar la clase CSS según el estado
           let statusClass = '';
-          switch(eve.eveComuEstado.toLowerCase()) {
+          switch (eve.eveComuEstado.toLowerCase()) {
             case 'activo':
               statusClass = 'status-active';
               break;
@@ -71,7 +67,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             default:
               statusClass = 'status-active';
           }
-          
+
           // Formatear fechas para mostrarlas mejor
           const fechaInicio = new Date(eve.eveComuFechaInicio).toLocaleString('es-ES', {
             day: '2-digit',
@@ -80,7 +76,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             hour: '2-digit',
             minute: '2-digit'
           });
-          
+
           const fechaFin = new Date(eve.eveComuFechaFin).toLocaleString('es-ES', {
             day: '2-digit',
             month: 'short',
@@ -88,7 +84,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             hour: '2-digit',
             minute: '2-digit'
           });
-          
+
           const fechaCreacion = new Date(eve.eveComuFechaCreacion || eve.eveComuFechaInicio).toLocaleDateString('es-ES');
 
           // Crear el elemento del evento
@@ -143,8 +139,11 @@ document.addEventListener('DOMContentLoaded', async () => {
             configurarEliminacion(id);
           });
         });
+      } else if (response.status === 401) {
+        window.authSecurity.redirectToLogin('Sesión expirada');
       } else {
         console.error('Error al obtener los eventos:', response.status);
+        showError('Error al cargar los eventos');
       }
     } catch (error) {
       console.error('Error en la conexión:', error);
@@ -154,11 +153,14 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Función para cargar datos en el modal de edición
   const cargarDatosParaEditar = async (id) => {
     const headers = getAuthHeaders();
-    if (!headers) return;
+    if (!headers) {
+      window.authSecurity.redirectToLogin('Sesión requerida');
+      return;
+    }
     try {
-      const response = await fetch(`http://localhost:8080/project-AI/eventoComu/${id}`,{
-          method: "GET",
-          headers: headers
+      const response = await fetch(window.authSecurity.getApiUrl(`/eventoComu/${id}`), {
+        method: "GET",
+        headers: headers
       });
       if (response.ok) {
         const evento = await response.json();
@@ -167,49 +169,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         document.getElementById('editarTituloEvento').value = evento.eveComuTitulo;
         document.getElementById('editarDescripcion').value = evento.eveComuDescripcion;
         document.getElementById('editarCategoria').value = evento.eveComuCategoria || 'conferencia';
-        
+
         // Formatear fechas para el input datetime-local
         const fechaInicio = new Date(evento.eveComuFechaInicio);
         const fechaFin = new Date(evento.eveComuFechaFin);
-        
+
         document.getElementById('editarFechaInicio').value = fechaInicio.toISOString().slice(0, 16);
         document.getElementById('editarFechaFin').value = fechaFin.toISOString().slice(0, 16);
-        
+
         document.getElementById('editarUbicacion').value = evento.eveComuUbicacion;
         document.getElementById('editarEnlace').value = evento.eveComuEnlace;
         document.getElementById('editarEstado').value = evento.eveComuEstado.toLowerCase();
-        
+
         // Guardar el ID en el formulario para usarlo al guardar
         document.getElementById('formEditarEvento').dataset.id = id;
+      } else if (response.status === 401) {
+        window.authSecurity.redirectToLogin('Sesión expirada');
       } else {
         console.error('Error al obtener los datos del evento:', await response.text());
-        showWarning("Error al cargar los datos para editar.");
+        showError("Error al cargar los datos para editar.");
       }
     } catch (error) {
       console.error('Error en la conexión:', error);
       showWarning("Error en la conexión al servidor.");
     }
   };
-  
+
   // Configurar el evento de eliminación
   const configurarEliminacion = (id) => {
     const modal = document.getElementById('modalConfirmarEliminar');
     const btnConfirmarEliminar = modal.querySelector('.btn-danger');
-    
+
     // Remover cualquier evento previo
     btnConfirmarEliminar.replaceWith(btnConfirmarEliminar.cloneNode(true));
     const newBtn = modal.querySelector('.btn-danger');
-    
+
     // Agregar nuevo evento
     newBtn.addEventListener('click', async () => {
       const headers = getAuthHeaders();
-      if (!headers) return;
+      if (!headers) {
+        window.authSecurity.redirectToLogin('Sesión requerida');
+        return;
+      }
       try {
-        const response = await fetch(`http://localhost:8080/project-AI/eventoComuE/${id}`, {
+        const response = await fetch(window.authSecurity.getApiUrl(`/eventoComuE/${id}`), {
           method: "DELETE",
           headers: headers
         });
-  
+
         if (response.ok) {
           showSuccess("Evento eliminado correctamente");
           // Cerrar el modal
@@ -217,9 +224,11 @@ document.addEventListener('DOMContentLoaded', async () => {
           modalInstance.hide();
           // Recargar los eventos
           await fetchEvento();
+        } else if (response.status === 401) {
+          window.authSecurity.redirectToLogin('Sesión expirada');
         } else {
           console.error('Error al eliminar el evento:', await response.text());
-          showWarning("Error al eliminar el evento.");
+          showError("Error al eliminar el evento.");
         }
       } catch (error) {
         console.error('Error en la conexión al eliminar:', error);
@@ -227,11 +236,11 @@ document.addEventListener('DOMContentLoaded', async () => {
       }
     });
   };
-  
+
   // Configurar el envío del formulario de edición
   document.getElementById('formEditarEvento').addEventListener('submit', async (event) => {
     event.preventDefault();
-    
+
     const id = event.target.dataset.id;
     const titulo = document.getElementById('editarTituloEvento').value;
     const descripcion = document.getElementById('editarDescripcion').value;
@@ -242,9 +251,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const enlace = document.getElementById('editarEnlace').value;
     const estado = document.getElementById('editarEstado').value;
     const headers = getAuthHeaders();
-      if (!headers) return;
+    if (!headers) {
+      window.authSecurity.redirectToLogin('Sesión requerida');
+      return;
+    }
     try {
-      const response = await fetch(`http://localhost:8080/project-AI/eventoComuA`, {
+      const response = await fetch(window.authSecurity.getApiUrl('/eventoComuA'), {
         method: "POST",
         headers: headers,
         body: JSON.stringify({
@@ -259,7 +271,7 @@ document.addEventListener('DOMContentLoaded', async () => {
           eveComuCategoria: categoria
         })
       });
-  
+
       if (response.ok) {
         showSuccess("Evento actualizado correctamente");
         // Cerrar el modal
@@ -267,9 +279,11 @@ document.addEventListener('DOMContentLoaded', async () => {
         modal.hide();
         // Recargar los eventos
         await fetchEvento();
+      } else if (response.status === 401) {
+        window.authSecurity.redirectToLogin('Sesión expirada');
       } else {
         console.error('Error al actualizar el evento:', await response.text());
-        showWarning("Error al actualizar el evento.");
+        showError("Error al actualizar el evento.");
       }
     } catch (error) {
       console.error('Error en la conexión al actualizar:', error);
@@ -280,3 +294,121 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Llamamos a la función para obtener los datos cuando cargue la página
   fetchEvento();
 });
+
+// Toggle sidebar on mobile
+document.getElementById('mobileMenuBtn').addEventListener('click', function () {
+  document.querySelector('.sidebar').classList.toggle('show');
+});
+
+// Efecto hover premium para tarjetas
+const cards = document.querySelectorAll('.system-card');
+cards.forEach(card => {
+  card.addEventListener('mouseenter', () => {
+    const icon = card.querySelector('.system-icon');
+    icon.style.transform = 'rotate(5deg) scale(1.05)';
+
+    const btn = card.querySelector('.btn-system');
+    if (btn) {
+      btn.style.transform = 'translateY(-3px)';
+    }
+  });
+
+  card.addEventListener('mouseleave', () => {
+    const icon = card.querySelector('.system-icon');
+    icon.style.transform = 'rotate(0) scale(1)';
+
+    const btn = card.querySelector('.btn-system');
+    if (btn) {
+      btn.style.transform = 'translateY(0)';
+    }
+  });
+});
+
+// Efecto para el botón de logout
+const logoutBtn = document.getElementById('btnLogout');
+if (logoutBtn) {
+  logoutBtn.addEventListener('mouseenter', () => {
+    const icon = logoutBtn.querySelector('i');
+    icon.style.transform = 'translateX(3px)';
+  });
+
+  logoutBtn.addEventListener('mouseleave', () => {
+    const icon = logoutBtn.querySelector('i');
+    icon.style.transform = 'translateX(0)';
+  });
+}
+// Search functionality
+document
+  .getElementById("btnBuscar")
+  .addEventListener("click", function () {
+    const searchTerm = document
+      .getElementById("buscarEvento")
+      .value.toLowerCase();
+    const filterStatus = document.getElementById("filtrarEstado").value;
+    const eventCards = document.querySelectorAll(".event-card");
+
+    eventCards.forEach((card) => {
+      const title = card
+        .querySelector(".event-header h5")
+        .textContent.toLowerCase();
+      const description = card
+        .querySelector(".event-body p")
+        .textContent.toLowerCase();
+      const status = card
+        .querySelector(".event-status")
+        .textContent.toLowerCase();
+
+      const matchesSearch =
+        title.includes(searchTerm) || description.includes(searchTerm);
+      const matchesStatus =
+        filterStatus === "todos" || status.includes(filterStatus);
+
+      if (matchesSearch && matchesStatus) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  });
+
+// Filter functionality
+document
+  .getElementById("filtrarEstado")
+  .addEventListener("change", function () {
+    document.getElementById("btnBuscar").click();
+  });
+
+
+// Search functionality
+document
+  .getElementById("btnBuscar")
+  .addEventListener("click", function () {
+    const searchTerm = document
+      .getElementById("buscarEvento")
+      .value.toLowerCase();
+    const filterStatus = document.getElementById("filtrarEstado").value;
+    const eventCards = document.querySelectorAll(".event-card");
+
+    eventCards.forEach((card) => {
+      const title = card
+        .querySelector(".event-header h5")
+        .textContent.toLowerCase();
+      const description = card
+        .querySelector(".event-body p")
+        .textContent.toLowerCase();
+      const status = card
+        .querySelector(".event-status")
+        .textContent.toLowerCase();
+
+      const matchesSearch =
+        title.includes(searchTerm) || description.includes(searchTerm);
+      const matchesStatus =
+        filterStatus === "todos" || status.includes(filterStatus);
+
+      if (matchesSearch && matchesStatus) {
+        card.style.display = "block";
+      } else {
+        card.style.display = "none";
+      }
+    });
+  });

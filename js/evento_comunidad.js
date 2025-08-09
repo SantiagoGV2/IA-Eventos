@@ -40,15 +40,8 @@ function showWarning(title, text) {
     });
 }
 function getAuthHeaders() {
-    const token = localStorage.getItem("jwtToken"); // Obtiene el token LIMPIO
-    if (!token) {
-        console.error("No hay token para la petición.");
-        return null;
-    }
-    return {
-        "Authorization": `Bearer ${token}`, // AÑADE el prefijo "Bearer " aquí
-        "Content-Type": "application/json"
-    };
+    // Usar el nuevo sistema de autenticación seguro
+    return window.authSecurity.getAuthHeaders();
 }
 
 document.addEventListener("DOMContentLoaded", async () => {
@@ -76,7 +69,7 @@ async function obtenerUsuario() {
         return;
     }
   try {
-    const response = await fetch("http://localhost:8080/project-AI/usuarios/auth", {
+    const response = await fetch(window.authSecurity.getApiUrl("/usuarios/auth"), {
       method: "GET",
       headers: headers
     });
@@ -104,8 +97,8 @@ async function obtenerUsuario() {
             text: error.message,
             confirmButtonText: 'Ir a Login'
           });
-    localStorage.removeItem("jwtToken");
-    window.location.href = "/pages/login.html";
+    window.authSecurity.clearToken();
+    window.authSecurity.redirectToLogin(error.message);
   }
 
 }
@@ -120,10 +113,9 @@ function cerrarSesion() {
         cancelButtonColor: '#d33',
         confirmButtonText: 'Sí, cerrar sesión',
         cancelButtonText: 'Cancelar'
-    }).then((result) => {
+    }).then(async(result) => {
         if (result.isConfirmed) {
-            localStorage.removeItem('jwtToken');
-            window.location.href = '/pages/login.html';
+            await window.authSecurity.logout();
         }
     });
 }
@@ -133,7 +125,7 @@ async function compartirEvento(eventoId, medio) {
     if (!headers) return; // Si no hay token, no hacer nada.
 
   try {
-    const response = await fetch("http://localhost:8080/project-AI/compartir", {
+    const response = await fetch(window.authSecurity.getApiUrl("/compartir"), {
       method: "POST",
       headers: headers,
       body: JSON.stringify({
@@ -194,7 +186,7 @@ async function guardarEvento(eventoId, button) {
   };
 
   try {
-    const response = await fetch("http://localhost:8080/project-AI/eventoGuardadoAG", {
+    const response = await fetch(window.authSecurity.getApiUrl("/eventoGuardadoAG"), {
       method: "POST",
       headers: headers,
       body: JSON.stringify(body)
@@ -213,7 +205,7 @@ async function guardarEvento(eventoId, button) {
         }
     } catch (error) {
         console.error("Error al guardar evento:", error);
-        showError(error.message);
+        showError("Evento ya guardado");
         button.innerHTML = '<i class="bi bi-bookmark-plus"></i> Reintentar';
         button.disabled = false;
     }
@@ -312,7 +304,7 @@ const fetchEvento = async () => {
     if (!headers) return; // Si no hay token, no hacer nada.
 
   try {
-    const response = await fetch('http://localhost:8080/project-AI/eventoComuTodo', {
+    const response = await fetch(window.authSecurity.getApiUrl('/eventoComuTodo'), {
       method: "GET",
       headers: headers,
     });
@@ -335,55 +327,103 @@ const fetchEvento = async () => {
   }
 };
 
-document.getElementById("form-filtros").addEventListener("submit", async function (e) {
-  e.preventDefault();
-  await filtrarEventos();
+document.addEventListener("DOMContentLoaded", () => {
+    // Función "debounce" para no sobrecargar el servidor al teclear.
+    // Espera 500ms después de que el usuario deja de escribir.
+    const debounce = (func, delay = 500) => {
+        let timeoutId;
+        return (...args) => {
+            clearTimeout(timeoutId);
+            timeoutId = setTimeout(() => {
+                func.apply(this, args);
+            }, delay);
+        };
+    };
+
+    const debouncedFiltrar = debounce(filtrarEventos);
+
+    // Asignar listeners a todos los controles de filtro
+    document.querySelectorAll('.filtro-control').forEach(control => {
+        if (control.type === 'text') {
+            // Usamos 'input' y el debounce para los campos de texto
+            control.addEventListener('input', debouncedFiltrar);
+        } else {
+            // Usamos 'change' para los menús desplegables (select)
+            control.addEventListener('change', filtrarEventos);
+        }
+    });
+
+    // Funcionalidad del botón para limpiar los filtros
+    document.getElementById('btn-limpiar-filtros').addEventListener('click', () => {
+        document.getElementById('form-filtros').reset();
+        filtrarEventos();
+    });
+    
+    // Carga inicial de todos los eventos
+    filtrarEventos(); 
 });
 
 async function filtrarEventos() {
-  const titulo = document.getElementById("titulo").value.trim();
-  const categoria = document.getElementById("categoria").value;
-  const estado = document.getElementById("estado").value;
-  const ubicacion = document.getElementById("ubicacion").value.trim();
+    // Añadimos feedback visual de carga
+    const listaEventos = document.getElementById('listaEventos');
+    listaEventos.style.opacity = '0.5'; 
 
-  const params = new URLSearchParams();
-  if (titulo) params.append("titulo", titulo);
-  if (categoria) params.append("categoria", categoria);
-  if (estado) params.append("estado", estado);
-  if (ubicacion) params.append("ubicacion", ubicacion);
-  const headers = getAuthHeaders();
-    if (!headers) return; // Si no hay token, no hacer nada.
-  try {
-    const response = await fetch(`http://localhost:8080/project-AI/eventoComuFiltro?${params.toString()}`, {
-      method: "GET",
-      headers: headers,
-    });
+    const titulo = document.getElementById("titulo").value.trim();
+    const categoria = document.getElementById("categoria").value;
+    const estado = document.getElementById("estado").value;
+    const ubicacion = document.getElementById("ubicacion").value.trim();
 
-    if (!response.ok) {
-      throw new Error("Error al filtrar eventos");
+    const params = new URLSearchParams();
+    if (titulo) params.append("titulo", titulo);
+    if (categoria) params.append("categoria", categoria);
+    if (estado) params.append("estado", estado);
+    if (ubicacion) params.append("ubicacion", ubicacion);
+
+    const headers = window.authSecurity.getAuthHeaders(); // Asumo que authSecurity está disponible
+    if (!headers) {
+        listaEventos.style.opacity = '1';
+        return;
     }
 
-    const eventos = await response.json();
-    renderizarEventos(eventos);
-  } catch (error) {
-    console.error("Error al filtrar eventos:", error);
-    showError("No se pudieron obtener los eventos filtrados.");
-  }
+    try {
+        const response = await fetch(window.authSecurity.getApiUrl(`/eventoComuFiltro?${params.toString()}`), {
+            method: "GET",
+            headers: headers,
+        });
+
+        if (!response.ok) {
+            throw new Error("Error al filtrar eventos");
+        }
+
+        const eventos = await response.json();
+        renderizarEventos(eventos);
+    } catch (error) {
+        console.error("Error al filtrar eventos:", error);
+        showError("No se pudieron obtener los eventos filtrados.");
+    } finally {
+        // Restauramos la opacidad cuando la carga termina (con éxito o error)
+        listaEventos.style.opacity = '1';
+    }
 }
 
 function renderizarEventos(eventos) {
-  const listaEventos = document.getElementById('listaEventos');
-  listaEventos.innerHTML = '';
-  eventos.forEach(evento => {
-    const card = construirTarjetaEvento(evento);
-    listaEventos.appendChild(card);
-  });
+    const listaEventos = document.getElementById('listaEventos');
+    listaEventos.innerHTML = ''; // Limpiamos los resultados anteriores
+
+    if (eventos.length === 0) {
+        listaEventos.innerHTML = `
+            <div class="col-12 text-center my-5">
+                <h4>No se encontraron eventos</h4>
+                <p>Intenta con otros filtros o límpialos para ver todos los eventos.</p>
+            </div>
+        `;
+        return;
+    }
+
+    eventos.forEach(evento => {
+        const card = construirTarjetaEvento(evento); 
+        listaEventos.appendChild(card);
+    });
 }
-
-
-
-document.addEventListener("DOMContentLoaded", () => {
-  filtrarEventos(); // Carga todos los eventos sin filtros
-});
 
 

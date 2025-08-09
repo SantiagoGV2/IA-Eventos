@@ -1,0 +1,74 @@
+ :root {
+     --primary-color: #e4022c;
+     --secondary-color: #273474;
+     --complementary-color: #394a9e;
+     --light-color: #f8f9fa;
+     --dark-color: #212529;
+ }
+
+ .bg-admin-primary {
+     background: linear-gradient(135deg, var(--secondary-color) 0%, var(--complementary-color) 100%);
+ }
+
+ .text-admin-primary {
+     color: var(--primary-color);
+ }
+
+ .admin-feature-card {
+     border-left: 4px solid var(--primary-color);
+     transition: all 0.3s ease;
+ }
+
+ .admin-feature-card:hover {
+     transform: translateY(-5px);
+     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+ }
+
+ .admin-icon {
+     font-size: 2.5rem;
+     color: var(--primary-color);
+ }
+
+ .badge-active {
+     background-color: #28a745;
+ }
+
+ .badge-expired {
+     background-color: #dc3545;
+ }
+
+ .badge-upcoming {
+     background-color: #17a2b8;
+ }
+
+ .timeline {
+     position: relative;
+     padding-left: 1.5rem;
+ }
+
+ .timeline::before {
+     content: '';
+     position: absolute;
+     left: 0;
+     top: 0;
+     bottom: 0;
+     width: 2px;
+     background: var(--primary-color);
+ }
+
+ .timeline-item {
+     position: relative;
+     padding-bottom: 1.5rem;
+ }
+
+ .timeline-item::before {
+     content: '';
+     position: absolute;
+     left: -1.68rem;
+     top: 0.25rem;
+     width: 12px;
+     height: 12px;
+     border-radius: 50%;
+     background: var(--complementary-color);
+     border: 2px solid var(--primary-color);
+ }
