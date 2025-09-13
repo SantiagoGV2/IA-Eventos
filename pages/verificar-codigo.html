@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verificar Código | EventConnect</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <link rel="stylesheet" href="../css/contraseña.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-card">
+            <div class="row g-0">
+                <div class="col-lg-6 d-none d-lg-block auth-illustration">
+                    <div class="illustration-content">
+                        <i class="bi bi-shield-lock" style="font-size: 3rem; margin-bottom: 1.5rem; color: rgba(255,255,255,0.9);"></i>
+                        <h3 class="illustration-title">Verificación de identidad</h3>
+                        <p class="illustration-text">Ingresa el código que enviamos a tu correo para continuar.</p>
+                        <ul class="features-list" style="list-style: none; padding-left: 0;">
+                            <li><i class="bi bi-123"></i> Código de 6 dígitos</li>
+                            <li><i class="bi bi-clock-history"></i> Expira en pocos minutos</li>
+                            <li><i class="bi bi-arrow-repeat"></i> Puedes reenviarlo</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="col-lg-6">
+                    <div class="auth-form">
+                        <h1 class="form-title">Verificar código</h1>
+
+                        <form id="verifyCodeForm">
+                            <div class="mb-2">
+                                <label class="form-label">Correo</label>
+                                <input type="email" class="form-control" id="emailForCode" placeholder="tucorreo@ejemplo.com" required>
+                                <small class="text-muted">Usa el correo al que te enviamos el código</small>
+                            </div>
+
+                            <div class="mb-4 mt-3">
+                                <label for="verificationCode" class="form-label">Código de verificación</label>
+                                <input type="text" inputmode="numeric" pattern="\d{6}" maxlength="6" class="form-control text-center" id="verificationCode" placeholder="______" required>
+                                <small class="text-muted">Ingresa 6 dígitos</small>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary">
+                                <i class="bi bi-shield-check me-2"></i> Verificar
+                            </button>
+
+                            <div class="d-flex justify-content-between align-items-center mt-4">
+                                <a href="./recuperar-password.html" class="auth-link">
+                                    <i class="bi bi-arrow-left-short"></i> Cambiar correo
+                                </a>
+                                <button id="resendCodeBtn" type="button" class="btn btn-link p-0 auth-link">Reenviar código</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../js/verificar-codigo.js"></script>
+</body>
+</html>
+
